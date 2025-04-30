@@ -2,20 +2,21 @@ version: '3.8'
 
 services:
   auth-service:
-    build: ./auth-service
+    build: ./services/auth-service
     container_name: auth-service
     ports:
       - "4000:3000"
     depends_on:
       - postgres
+      - redis
     env_file:
-      - ./auth-service/.env
+      - ./services/auth-service/.env
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
     command: npm run dev
     volumes:
-    - ./auth-service:/app
+    - ./services/auth-service:/app
     - /app/node_modules
     networks:
       - app-network
@@ -25,7 +26,7 @@ services:
     container_name: postgres
     restart: always
     env_file:
-      - ./auth-service/.env
+      - ./services/auth-service/.env
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -46,3 +47,4 @@ networks:
 
 volumes:
   pgdata:
+  redisdata:

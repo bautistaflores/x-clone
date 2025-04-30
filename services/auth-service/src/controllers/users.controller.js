@@ -1,0 +1,127 @@
+import prisma from '../../prisma/prisma.js';
+import bcrypt from 'bcrypt';
+import redisClient from '../libs/redis.js';
+import { generateToken } from '../libs/jwt.js';
+
+export const register = async (req, res) => {
+    const { username, email, password} = req.body;
+
+    try {
+        // Verificacion si usuario existe
+        const existingUser = await prisma.users.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email }
+                ]
+            }
+        })
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+
+        // Nombre por defecto del perfil
+        const randomId = Math.floor(Math.random() * 1000000); // Generate a random ID
+        const defaultProfile = {
+            full_name: `user${randomId}`
+        }
+
+        // Encriptar contraseña
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Crea usuario y perfil
+        const newUser = await prisma.users.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword,
+                profiles: {
+                    create: defaultProfile
+                }
+            },
+            include: {
+                profiles: true,
+            }
+        })
+    
+        res.status(201).json({
+            user: {
+              id: newUser.id,
+              username: newUser.username,
+              email: newUser.email,
+              password: newUser.password
+            },
+            profile: {
+              full_name: newUser.profiles.full_name
+            }
+        });
+      } catch (error) {
+        res.status(500).json({ error: 'Error creating user' });
+      }
+}
+
+export const login = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Verificacion si usuario existe
+        const user = await prisma.users.findUnique({
+            where: {
+                username
+            }
+        })
+        if (!user) return res.status(400).json({ error: 'User not found' });
+
+        // Verificacion de contraseña
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if(!isPasswordValid) return res.status(400).json({ error: 'Invalid password' });
+
+        // Generar token
+        const token = generateToken(user.id);
+
+        // Guardar token en Redis
+        await redisClient.set(`jwt:${token}`, 'valid', { EX: 3600 });
+
+        // 5. Enviar token al cliente (y datos de usuario si es necesario)
+        res.json({
+            token,
+            user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            },
+        });
+    } catch (error) {
+        console.error('Error en login:', err);
+        res.status(500).json({ error: 'Error al iniciar sesión' });
+    }
+}
+
+export const logout = async (req, res) => {
+
+    try {
+        const token = req.token || req.headers.authorization?.split(' ')[1];
+
+        // 1. Eliminar token de Redis (invalida el JWT)
+        await redisClient.del(`jwt:${token}`);
+
+        // 2. Opcional: Añadir a blacklist para registrar tokens inválidos
+        await redisClient.set(`blacklist:${token}`, 'invalid', 'EX', 600); // 10 minutos
+
+        res.json({ message: "Session closed successfully" });
+    } catch (error) {
+        console.error('Error en logout:', error);
+        res.status(500).json({ error: 'Error logout' });
+    }
+}
+
+export const getUsers = async (req, res) => {
+    try {
+        const users = await prisma.users.findMany();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching users' });
+    }
+}
