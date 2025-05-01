@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id               String     @id @default(uuid())
+  content          String?
+  media_url        String?    @db.VarChar(2048) // URL larga
+  user_id          String     // Foreign Key (sin relación directa)
+  
+  // Jerarquía de posts
+  parent_id        String?    // Para comentarios
+  parent           Post?      @relation("CommentToPost", fields: [parent_id], references: [id])
+  comments         Post[]     @relation("CommentToPost")
+  
+  // Retweets
+  is_retweet       Boolean    @default(false)
+  original_post_id String?
+  original_post    Post?      @relation("RetweetToPost", fields: [original_post_id], references: [id])
+  retweets         Post[]     @relation("RetweetToPost")
+
+  // Likes
+  likes            Like[]
+
+  created_at       DateTime   @default(now()) @map("created_at")
+
+  @@index([user_id]) // Optimizar búsquedas por autor
+  @@index([parent_id]) // Para cargar comentarios rápido
+
+  @@map("posts")
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  post_id    String
+  post       Post     @relation(fields: [post_id], references: [id])
+  user_id    String   // ID del usuario en auth-service
+  created_at DateTime @default(now()) @map("created_at")
+
+  @@unique([post_id, user_id]) // Evitar likes duplicados
+  @@index([user_id]) // Para consultas como "posts que di like"
+
+  @@map("likes")
+}

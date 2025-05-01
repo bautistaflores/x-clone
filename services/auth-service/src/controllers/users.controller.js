@@ -8,7 +8,7 @@ export const register = async (req, res) => {
 
     try {
         // Verificacion si usuario existe
-        const existingUser = await prisma.users.findFirst({
+        const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
                     { username },
@@ -32,17 +32,17 @@ export const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
 
         // Crea usuario y perfil
-        const newUser = await prisma.users.create({
+        const newUser = await prisma.user.create({
             data: {
                 username,
                 email,
                 password: hashedPassword,
-                profiles: {
+                profile: {
                     create: defaultProfile
                 }
             },
             include: {
-                profiles: true,
+                profile: true,
             }
         })
     
@@ -54,10 +54,11 @@ export const register = async (req, res) => {
               password: newUser.password
             },
             profile: {
-              full_name: newUser.profiles.full_name
+              full_name: newUser.profile.full_name
             }
         });
       } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Error creating user' });
       }
 }
@@ -67,7 +68,7 @@ export const login = async (req, res) => {
 
     try {
         // Verificacion si usuario existe
-        const user = await prisma.users.findUnique({
+        const user = await prisma.user.findUnique({
             where: {
                 username
             }
@@ -119,7 +120,7 @@ export const logout = async (req, res) => {
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await prisma.users.findMany();
+        const users = await prisma.user.findMany();
         res.json(users);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching users' });
