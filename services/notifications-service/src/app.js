@@ -4,9 +4,11 @@ import cors from 'cors';
 const app = express();
 
 app.use(express.json());
+
+// Configuración de CORS
 app.use(cors({
-    origin: "http://localhost:80", // url del front
-    credentials: true, // para que el front pueda recibir las cookies
-}))
+  origin: "http://localhost", // El frontend se accede desde nginx
+  credentials: true, // Para cookies JWT y sesiones
+}));
 
 export default app;

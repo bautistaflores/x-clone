@@ -1,8 +1,7 @@
-// src/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3002', // tu posts-service
+  baseURL: 'http://localhost',
 });
 
 api.interceptors.request.use((config) => {
