@@ -7,14 +7,19 @@ WORKDIR /app
 # 3. Copia el package.json y package-lock.json
 COPY package*.json ./
 
+COPY .env .
+
 # 4. Instala las dependencias
-RUN npm install
+RUN npm install --include=dev
 
 # 5. Copia el resto del código fuente
 COPY . .
+
+# 🔹 Genera el cliente de Prisma
+RUN npx prisma generate
 
 # 6. Expone el puerto (por ejemplo 3000, depende del servicio)
 EXPOSE 3000
 
 # 7. Comando para correr la app
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

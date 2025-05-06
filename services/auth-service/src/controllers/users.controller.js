@@ -1,5 +1,5 @@
 import prisma from '../../prisma/prisma.js';
-import bcrypt from 'bcrypt';
+import bcryptjs from 'bcryptjs';
 import redisClient from '../libs/redis.js';
 import { generateToken } from '../libs/jwt.js';
 
@@ -29,7 +29,7 @@ export const register = async (req, res) => {
         }
 
         // Encriptar contraseña
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcryptjs.hash(password, 12);
 
         // Crea usuario y perfil
         const newUser = await prisma.user.create({
