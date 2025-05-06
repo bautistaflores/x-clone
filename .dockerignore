@@ -1,0 +1,11 @@
+node_modules
+
+.git/
+
+.env
+secrets.json
+config.ini
+
+*.log
+*.tmp
+temp/

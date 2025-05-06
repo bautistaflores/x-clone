@@ -76,6 +76,26 @@ services:
     networks:
       - app-network
 
+  notifications-service:
+    build: ./services/notifications-service
+    container_name: notifications-service
+    ports:
+      - "6000:3000"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./services/notifications-service/.env
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev
+    volumes:
+    - ./services/notifications-service:/app
+    - /app/node_modules
+    networks:
+      - app-network
+
 networks:
   app-network:
 
