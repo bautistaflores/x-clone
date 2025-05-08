@@ -1,10 +1,14 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro';
+const JWT_SECRET = process.env.JWT_SECRET || 'una_clave_secreta_segura';
 const EXPIRES_IN = '1h';
 
 export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: EXPIRES_IN });
+  return jwt.sign(
+    { userId }, 
+    JWT_SECRET, 
+    { expiresIn: EXPIRES_IN }
+  );
 };
 
 export const verifyToken = (token) => {
