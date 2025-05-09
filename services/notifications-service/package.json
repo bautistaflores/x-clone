@@ -3,22 +3,22 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon --env-file .env src/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "prisma": "^6.7.0"
-  },
   "dependencies": {
     "@prisma/client": "^6.7.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "nodemon": "^3.1.10",
-    "redis": "^5.0.1",
-    "socket.io": "^4.8.1"
+    "redis": "^5.0.0",
+    "socket.io": "^4.7.4",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "prisma": "^6.7.0"
   }
 }

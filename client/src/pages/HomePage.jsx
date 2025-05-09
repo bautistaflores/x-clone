@@ -1,11 +1,20 @@
+import { useEffect } from "react"
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePosts } from '../context/PostsContext';
+import PostCard from '../components/PostCard';
 
 function HomePage() {
-
     const { isAuthenticated, logout } = useAuth();
+    const { getPosts, posts } = usePosts()
+
+    useEffect(() => {
+        getPosts()
+    }, [])
+
     return (
         <div>
+            <h1>Home</h1>
             {isAuthenticated ? (
                 <ul>
                     <li>
@@ -22,7 +31,21 @@ function HomePage() {
                     </li>
                 </ul>
             )}
+
+
+            <div>
+                {
+                    posts.length > 0 ? (
+                        posts.map(post => (
+                            <PostCard post={post} key={post.id} />
+                        ))
+                    ) : (
+                        <h1>No hay posts</h1>
+                    )
+                }
+            </div>
         </div>
+
     )
 }
 

@@ -1,8 +1,20 @@
-import app from './app.js';
+import { redisClient, subscribeToNotifications, httpServer } from './app.js';
 
+// Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 
-// Escuchar en 0.0.0.0 para aceptar conexiones desde cualquier IP dentro de la red Docker
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Notifications-Service on port ${PORT}`);
-});
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+redisClient.connect()
+    .then(() => {
+        console.log('Redis Client Connected');
+        return subscribeToNotifications();
+    })
+    .then(() => {
+        httpServer.listen(PORT, '0.0.0.0', () => {
+            console.log(`Notifications-Service running on port ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('Error starting server:', err);
+        process.exit(1);
+    });

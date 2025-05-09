@@ -18,7 +18,7 @@ COPY . .
 # 🔹 Genera el cliente de Prisma
 RUN npx prisma generate
 
-# 6. Expone el puerto (por ejemplo 3000, depende del servicio)
+# 6. Expone el puerto
 EXPOSE 3000
 
 # 7. Comando para correr la app

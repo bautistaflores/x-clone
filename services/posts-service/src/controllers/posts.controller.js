@@ -86,12 +86,31 @@ export const likePost = async (req, res) => {
             return res.status(200).json({ message: 'Post deslikeado exitosamente' });
         }
 
+        // Obtener el post para saber quién es el dueño
+        const post = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post no encontrado' });
+        }
+
+        // Crear el like
         await prisma.like.create({
             data: {
                 user_id: userId,
                 post_id: postId
             }
         });
+
+        // Publicar evento en Redis solo si el like es nuevo
+        const redisClient = req.app.get('redisClient');
+        await redisClient.publish('notifications', JSON.stringify({
+            type: 'LIKE',
+            fromUserId: userId,
+            toUserId: post.user_id,
+            postId: postId
+        }));
 
         res.status(201).json({ message: 'Post likeado exitosamente' });
     } catch (error) {
