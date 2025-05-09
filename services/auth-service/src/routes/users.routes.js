@@ -17,9 +17,7 @@ router.get('/posts', authenticate, (req, res) => {
     res.json({ message: 'Posts protegidos' });
 });
 
-router.post('/logout', authenticate, logout, (req, res) => {
-    res.json({ message: 'Logoute Exitoso' });
-})
+router.post('/logout', authenticate, logout)
 
 router.put('/update', (req, res) => {
     res.send('Update route');

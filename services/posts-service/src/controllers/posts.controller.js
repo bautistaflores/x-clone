@@ -35,6 +35,71 @@ export const createPost = async (req, res) => {
     }
 }
 
+export const retweetPost = async (req, res) => {
+    const { postId } = req.params;
+    const userId = String(req.user.userId);
+
+    try {
+        const originalPost = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if (!originalPost) {
+            return res.status(404).json({ error: 'Post original no encontrado' });
+        }
+
+        const retweet = await prisma.post.create({
+            data: {
+                user_id: userId,
+                content: originalPost.content,
+                is_retweet: true,
+                original_post_id: postId
+            },
+            include: {
+                original_post: true
+            }
+        });
+
+        res.status(201).json(retweet);
+    } catch (error) {
+        console.error('Error al retweetear el post:', error);
+        res.status(500).json({ error: 'Error al retweetear el post' });
+    }
+}
+
+export const likePost = async (req, res) => {
+    const { postId } = req.params;
+    const userId = String(req.user.userId);
+
+    try {
+        const existingLike = await prisma.like.findUnique({
+            where: {
+                post_id: postId,
+                user_id: userId
+            }
+        });
+
+        if (existingLike) {
+            await prisma.like.delete({
+                where: { id: existingLike.id }
+            });
+            return res.status(200).json({ message: 'Post deslikeado exitosamente' });
+        }
+
+        await prisma.like.create({
+            data: {
+                user_id: userId,
+                post_id: postId
+            }
+        });
+
+        res.status(201).json({ message: 'Post likeado exitosamente' });
+    } catch (error) {
+        console.error('Error al likear el post:', error);
+        res.status(500).json({ error: 'Error al likear el post' });
+    }
+}
+
 export const getPosts = async (req, res) => {
     try {
         const posts = await prisma.post.findMany({
