@@ -11,8 +11,13 @@ const redisClient = createClient({
     url: process.env.REDIS_URL || 'redis://redis:6379'
 });
 
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
-redisClient.connect().then(() => console.log('Redis Client Connected'));
+redisClient.on('error', (err) => console.error('Redis Client Error:', err));
+redisClient.on('connect', () => console.log('Redis Client Connected'));
+
+// Conectar a Redis
+redisClient.connect()
+    .then(() => console.log('Redis connection established'))
+    .catch(err => console.error('Redis connection error:', err));
 
 // Hacer el cliente de Redis disponible globalmente
 app.set('redisClient', redisClient);

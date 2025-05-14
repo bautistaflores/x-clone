@@ -16,9 +16,9 @@ datasource db {
 model Notification {
   id          Int      @id @default(autoincrement())
   type        String   // 'like', 'comment', 'rt', 'follow'.
-  fromUserId  Int
-  toUserId    Int
-  postId      Int?     // opcional: post relacionado
+  fromUserId  String
+  toUserId    String
+  postId      String?     // opcional: post relacionado
   commentId   Int?     // opcional: comentario relacionado
   createdAt   DateTime @default(now())
 

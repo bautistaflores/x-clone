@@ -1,7 +1,7 @@
 import prisma from '../../prisma/prisma.js';
 import bcryptjs from 'bcryptjs';
 import redisClient from '../libs/redis.js';
-import { generateToken } from '../libs/jwt.js';
+import { generateToken, verifyToken } from '../libs/jwt.js';
 
 export const register = async (req, res) => {
     const { username, email, password} = req.body;
@@ -140,3 +140,29 @@ export const getUsers = async (req, res) => {
         res.status(500).json({ error: 'Error fetching users' });
     }
 }
+
+export const verifyAuth = async (req, res) => {
+    try {
+        // El middleware authenticate ya verificó el token y asignó req.userId
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        res.json({
+            user,
+            isAuthenticated: true
+        });
+    } catch (error) {
+        console.error('Error verifying auth:', error);
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};

@@ -72,21 +72,7 @@ export const likePost = async (req, res) => {
     const userId = String(req.user.userId);
 
     try {
-        const existingLike = await prisma.like.findUnique({
-            where: {
-                post_id: postId,
-                user_id: userId
-            }
-        });
-
-        if (existingLike) {
-            await prisma.like.delete({
-                where: { id: existingLike.id }
-            });
-            return res.status(200).json({ message: 'Post deslikeado exitosamente' });
-        }
-
-        // Obtener el post para saber quién es el dueño
+        // Verificar si el post existe primero
         const post = await prisma.post.findUnique({
             where: { id: postId }
         });
@@ -95,7 +81,41 @@ export const likePost = async (req, res) => {
             return res.status(404).json({ error: 'Post no encontrado' });
         }
 
-        // Crear el like
+        // Verificar si ya existe un like
+        const existingLike = await prisma.like.findUnique({
+            where: {
+                post_id_user_id: {
+                    post_id: postId,
+                    user_id: userId
+                }
+            }
+        });
+
+        if (existingLike) {
+            // Si existe, lo eliminamos (unlike)
+            await prisma.like.delete({
+                where: { id: existingLike.id }
+            });
+
+            // Publicar evento de unlike en Redis
+            const redisClient = req.app.get('redisClient');
+            if (redisClient) {
+                await redisClient.publish('notifications', JSON.stringify({
+                    type: 'UNLIKE',
+                    fromUserId: userId,
+                    toUserId: post.user_id,
+                    postId: postId,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+
+            return res.status(200).json({ 
+                message: 'Post deslikeado exitosamente',
+                action: 'unlike'
+            });
+        }
+
+        // Si no existe, creamos el like
         await prisma.like.create({
             data: {
                 user_id: userId,
@@ -103,16 +123,22 @@ export const likePost = async (req, res) => {
             }
         });
 
-        // Publicar evento en Redis solo si el like es nuevo
+        // Publicar evento de like en Redis
         const redisClient = req.app.get('redisClient');
-        await redisClient.publish('notifications', JSON.stringify({
-            type: 'LIKE',
-            fromUserId: userId,
-            toUserId: post.user_id,
-            postId: postId
-        }));
+        if (redisClient) {
+            await redisClient.publish('notifications', JSON.stringify({
+                type: 'LIKE',
+                fromUserId: userId,
+                toUserId: post.user_id,
+                postId: postId,
+                timestamp: new Date().toISOString()
+            }));
+        }
 
-        res.status(201).json({ message: 'Post likeado exitosamente' });
+        res.status(201).json({ 
+            message: 'Post likeado exitosamente',
+            action: 'like'
+        });
     } catch (error) {
         console.error('Error al likear el post:', error);
         res.status(500).json({ error: 'Error al likear el post' });
@@ -133,7 +159,15 @@ export const getPosts = async (req, res) => {
                 created_at: 'desc'
             }
         });
-        res.json(posts);
+
+        // Transformar los posts para incluir información de likes
+        const postsWithLike = posts.map(post => ({
+            ...post,
+            likesCount: post.likes.length,
+            isLiked: post.likes.some(like => String(like.user_id) === String(req.user?.userId))
+        }));
+
+        res.json(postsWithLike);
     } catch (error) {
         res.status(500).json({ error: 'Error al obtener los posts' });
     }

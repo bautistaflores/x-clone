@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react"
-import { registerRequest, loginRequest, logoutRequest } from "../api/auth"
+import { registerRequest, loginRequest, logoutRequest, verifyAuthRequest } from "../api/auth"
 import Cookies from 'js-cookie'
 
 export const AuthContext = createContext()
@@ -14,12 +14,28 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [errors, setErrors] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const verifyAuth = async () => {
+            try {
+                const res = await verifyAuthRequest()
+                setUser(res.data.user)
+                setIsAuthenticated(true)
+            } catch (error) {
+                console.log('No hay sesión activa')
+            } finally {
+                setLoading(false)
+            }
+        }
+        verifyAuth()
+    }, [])
 
     const signup = async (user) => {
         try {
             const res = await registerRequest(user)
             console.log(res.data)
-            setUser(res.data)
+            setUser(res.data.user)
             setIsAuthenticated(true)
         } catch (error) {
             setErrors(error.response.data)
@@ -58,6 +74,10 @@ export const AuthProvider = ({ children }) => {
             return () => clearTimeout(timer)
         }
     }, [errors])
+
+    if (loading) {
+        return <div>Cargando...</div>
+    }
 
     return (
         <AuthContext.Provider value={{

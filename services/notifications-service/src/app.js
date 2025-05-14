@@ -52,22 +52,43 @@ async function subscribeToNotifications() {
     const subscriber = redisClient.duplicate();
     await subscriber.connect();
     await subscriber.subscribe('notifications', async (message) => {
-        const notification = JSON.parse(message);
-        
-        // Guardar la notificación en la base de datos
-        const savedNotification = await prisma.notification.create({
-            data: {
-                type: notification.type,
-                fromUserId: notification.fromUserId,
-                toUserId: notification.toUserId,
-                postId: notification.postId
-            }
-        });
+        try {
+            console.log('Notificación recibida:', message);
+            const notification = JSON.parse(message);
+            
+            if (notification.type === 'UNLIKE') {
+                // Si es un unlike, elimina la notificación de like existente
+                const deletedNotification = await prisma.notification.deleteMany({
+                    where: {
+                        type: 'LIKE',
+                        fromUserId: notification.fromUserId,
+                        toUserId: notification.toUserId,
+                        postId: notification.postId
+                    }
+                });
+                console.log('Notificación de like eliminada:', deletedNotification);
+            } else if (notification.type === 'LIKE') {
+                // Si es un like, crea la notificación
+                const savedNotification = await prisma.notification.create({
+                    data: {
+                        type: notification.type,
+                        fromUserId: notification.fromUserId,
+                        toUserId: notification.toUserId,
+                        postId: notification.postId
+                    }
+                });
 
-        // Enviar la notificación al usuario si está conectado
-        const userSocket = userSockets.get(notification.toUserId);
-        if (userSocket) {
-            userSocket.emit('notification', savedNotification);
+                console.log('Notificación guardada:', savedNotification);
+
+                // Envia la notificación al usuario si está conectado
+                const userSocket = userSockets.get(notification.toUserId);
+                if (userSocket) {
+                    userSocket.emit('notification', savedNotification);
+                    console.log('Notificación enviada al usuario:', notification.toUserId);
+                }
+            }
+        } catch (error) {
+            console.error('Error al procesar notificación:', error);
         }
     });
 }
