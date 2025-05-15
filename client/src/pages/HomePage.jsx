@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePosts } from '../context/PostsContext';
 import PostCard from '../components/PostCard';
+import NotificationsDisplay from '../components/NotificationsDisplay';
 
 function HomePage() {
     const { isAuthenticated, logout } = useAuth();
@@ -44,6 +45,7 @@ function HomePage() {
                     )
                 }
             </div>
+            <NotificationsDisplay />
         </div>
 
     )
