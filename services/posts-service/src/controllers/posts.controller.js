@@ -40,27 +40,73 @@ export const retweetPost = async (req, res) => {
     const userId = String(req.user.userId);
 
     try {
-        const originalPost = await prisma.post.findUnique({
+        // Verificar si el post existe
+        const post = await prisma.post.findUnique({
             where: { id: postId }
         });
 
-        if (!originalPost) {
-            return res.status(404).json({ error: 'Post original no encontrado' });
+        if (!post) {
+            return res.status(404).json({ error: 'Post no encontrado' });
         }
 
-        const retweet = await prisma.post.create({
-            data: {
-                user_id: userId,
-                content: originalPost.content,
-                is_retweet: true,
-                original_post_id: postId
-            },
-            include: {
-                original_post: true
+        // Verificar si ya existe un retweet
+        const existingRetweet = await prisma.retweet.findUnique({
+            where: {
+                user_id_post_id: {
+                    user_id: userId,
+                    post_id: postId
+                }
             }
         });
 
-        res.status(201).json(retweet);
+        if (existingRetweet) {
+            // Si existe, lo eliminamos (unretweet)
+            await prisma.retweet.delete({
+                where: { id: existingRetweet.id }
+            });
+
+            // Publicar evento de unretweet en Redis
+            const redisClient = req.app.get('redisClient');
+            if (redisClient) {
+                await redisClient.publish('notifications', JSON.stringify({
+                    type: 'UNRETWEET',
+                    fromUserId: userId,
+                    toUserId: post.user_id,
+                    postId: postId,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+
+            return res.status(200).json({
+                message: 'Post unretweeteado exitosamente',
+                action: 'unretweet'
+            });
+        }
+
+        // Si no existe, creamos el retweet
+        await prisma.retweet.create({
+            data: {
+                user_id: userId,
+                post_id: postId
+            }
+        });
+
+        // Publicar evento de retweet en Redis
+        const redisClient = req.app.get('redisClient');
+        if (redisClient) {
+            await redisClient.publish('notifications', JSON.stringify({
+                type: 'RETWEET',
+                fromUserId: userId,
+                toUserId: post.user_id,
+                postId: postId,
+                timestamp: new Date().toISOString()
+            }));
+        }
+
+        res.status(201).json({
+            message: 'Post retweeteado exitosamente',
+            action: 'retweet'
+        });
     } catch (error) {
         console.error('Error al retweetear el post:', error);
         res.status(500).json({ error: 'Error al retweetear el post' });
@@ -145,29 +191,72 @@ export const likePost = async (req, res) => {
     }
 }
 
+
 export const getPosts = async (req, res) => {
     try {
+        const userId = String(req.user?.userId);
+        
+        // Obtener posts normales
         const posts = await prisma.post.findMany({
             where: {
                 parent_id: null // Solo posts principales, no comentarios
             },
             include: {
                 comments: true,
-                likes: true
+                likes: true,
+                retweeters: true
             },
             orderBy: {
                 created_at: 'desc'
             }
         });
 
-        // Transformar los posts para incluir información de likes
-        const postsWithLike = posts.map(post => ({
+        // Obtener retweets
+        const retweets = await prisma.retweet.findMany({
+            include: {
+                originalPost: {
+                    include: {
+                        comments: true,
+                        likes: true,
+                        retweeters: true
+                    }
+                }
+            },
+            orderBy: {
+                retweeted_at: 'desc'
+            }
+        });
+
+        // Transformar los posts normales
+        const postsWithInteractions = posts.map(post => ({
             ...post,
             likesCount: post.likes.length,
-            isLiked: post.likes.some(like => String(like.user_id) === String(req.user?.userId))
+            isLiked: post.likes.some(like => String(like.user_id) === userId),
+            retweetsCount: post.retweeters.length,
+            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId),
+            type: 'post'
         }));
 
-        res.json(postsWithLike);
+        // Transformar los retweets
+        const retweetsWithInteractions = retweets.map(retweet => ({
+            ...retweet.originalPost,
+            likesCount: retweet.originalPost.likes.length,
+            isLiked: retweet.originalPost.likes.some(like => String(like.user_id) === userId),
+            retweetsCount: retweet.originalPost.retweeters.length,
+            isRetweeted: retweet.originalPost.retweeters.some(r => String(r.user_id) === userId),
+            type: 'retweet',
+            retweetedBy: retweet.user_id,
+            retweetedAt: retweet.retweeted_at
+        }));
+
+        // Combinar y ordenar por fecha
+        const allContent = [...postsWithInteractions, ...retweetsWithInteractions].sort((a, b) => {
+            const dateA = a.type === 'retweet' ? a.retweetedAt : a.created_at;
+            const dateB = b.type === 'retweet' ? b.retweetedAt : b.created_at;
+            return new Date(dateB) - new Date(dateA);
+        });
+
+        res.json(allContent);
     } catch (error) {
         res.status(500).json({ error: 'Error al obtener los posts' });
     }
@@ -182,7 +271,8 @@ export const getPostWithComments = async (req, res) => {
             where: { id: postId },
             include: {
                 comments: true,
-                likes: true
+                likes: true,
+                retweeters: true
             }
         });
         
@@ -192,7 +282,8 @@ export const getPostWithComments = async (req, res) => {
             },
             include: {
                 comments: true,
-                likes: true
+                likes: true,
+                retweeters: true
             },
             orderBy: {
                 created_at: 'desc'
@@ -203,14 +294,18 @@ export const getPostWithComments = async (req, res) => {
         const processedPost = {
             ...post,
             likesCount: post.likes.length,
-            isLiked: post.likes.some(like => String(like.user_id) === userId)
+            isLiked: post.likes.some(like => String(like.user_id) === userId),
+            retweetsCount: post.retweeters.length,
+            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId)
         };
 
         // Procesar los comentarios
         const processedComments = comments.map(comment => ({
             ...comment,
             likesCount: comment.likes.length,
-            isLiked: comment.likes.some(like => String(like.user_id) === userId)
+            isLiked: comment.likes.some(like => String(like.user_id) === userId),
+            retweetsCount: comment.retweeters.length,
+            isRetweeted: comment.retweeters.some(retweet => String(retweet.user_id) === userId)
         }));
 
         const postWithComments = {

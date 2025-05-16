@@ -23,9 +23,14 @@ const NotificationDisplay = memo(() => {
                 <ul>
                     {notifications.map((notification, index) => (
                         <li key={index}> 
-                            {notification.type === 'LIKE' && (
+                            {notification.type === 'LIKE' && String(user.id) !== notification.fromUserId && (
                                 <span>
                                     Usuario {notification.fromUserId} le dio like a tu post {notification.postId}
+                                </span>
+                            )}
+                            {notification.type === 'RETWEET' && String(user.id) !== notification.fromUserId && (
+                                <span>
+                                    Usuario {notification.fromUserId} retweeteo tu post {notification.postId}
                                 </span>
                             )}
                         </li>

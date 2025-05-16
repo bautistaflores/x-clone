@@ -24,11 +24,8 @@ model Post {
   parent           Post?      @relation("CommentToPost", fields: [parent_id], references: [id])
   comments         Post[]     @relation("CommentToPost")
   
-  // Retweets
-  is_retweet       Boolean    @default(false)
-  original_post_id String?
-  original_post    Post?      @relation("RetweetToPost", fields: [original_post_id], references: [id])
-  retweets         Post[]     @relation("RetweetToPost")
+  // Retweets (Relación para obtener los posts que *retweetean* este post)
+  retweeters     Retweet[] @relation("OriginalPostToRetweets")
 
   // Likes
   likes            Like[]
@@ -52,4 +49,18 @@ model Like {
   @@index([user_id]) // Para consultas como "posts que di like"
 
   @@map("likes")
+}
+
+model Retweet {
+  id             String   @id @default(uuid())
+  user_id        String   // ID del usuario que retweetea
+  post_id        String   // ID del post original retweeteado
+  retweeted_at   DateTime @default(now())
+
+  originalPost   Post     @relation("OriginalPostToRetweets", fields: [post_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, post_id]) // Evitar retweet duplicados
+  @@index([user_id]) 
+  @@index([post_id])
+  @@map("retweets")
 }

@@ -51,13 +51,34 @@ export const PostsProvider = ({ children }) => {
         )
     }
 
+    const updateRetweet = (postId, isRetweeted, retweetsCount) => {
+        // Actualizar el post individual si existe
+        if (post && post.id === postId) {
+            setPost(prevPost => ({
+                ...prevPost,
+                isRetweeted,
+                retweetsCount
+            }))
+        }
+        
+        // Actualizar el post en la lista de posts
+        setPosts(prevPosts => 
+            prevPosts.map(p => 
+                p.id === postId 
+                    ? { ...p, isRetweeted, retweetsCount }
+                    : p
+            )
+        )
+    }
+
     return (
         <PostsContext.Provider value={{
             posts,
             getPosts,
             post,
             getPostWithComments,
-            updatePostLike
+            updatePostLike,
+            updateRetweet
         }}>
             {children}
         </PostsContext.Provider>

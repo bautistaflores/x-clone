@@ -85,9 +85,49 @@ async function subscribeToNotifications() {
                     }
                 });
                 console.log('Notificación de like eliminada:', deletedNotification);
+
+                
             } else if (notification.type === 'LIKE') {
                 console.log('Procesando like:', notification);
                 // Si es un like, crea la notificación
+                const savedNotification = await prisma.notification.create({
+                    data: {
+                        type: notification.type,
+                        fromUserId: String(notification.fromUserId),
+                        toUserId: String(notification.toUserId),
+                        postId: notification.postId
+                    }
+                });
+
+                console.log('Notificación guardada en BD:', savedNotification);
+
+                // Envia la notificación al usuario si está conectado
+                const userSocket = userSockets.get(String(notification.toUserId));
+                if (userSocket) {
+                    console.log(`Enviando notificación al socket del usuario ${notification.toUserId}`);
+                    userSocket.emit('notification', savedNotification);
+                } else {
+                    console.log(`Usuario ${notification.toUserId} no está conectado, notificación guardada para más tarde`);
+                }
+
+
+            } else if (notification.type === 'UNRETWEET') {
+                console.log('Procesando unretweet:', notification);
+                // Si es un unretweet, elimina la notificación de retweet existente
+                const deletedNotification = await prisma.notification.deleteMany({
+                    where: {
+                        type: 'RETWEET',
+                        fromUserId: String(notification.fromUserId),
+                        toUserId: String(notification.toUserId),
+                        postId: notification.postId
+                    }
+                });
+                console.log('Notificación de retweet eliminada:', deletedNotification);
+
+
+            } else if (notification.type === 'RETWEET') {
+                console.log('Procesando retweet:', notification);
+                // Si es un retweet, crea la notificación
                 const savedNotification = await prisma.notification.create({
                     data: {
                         type: notification.type,
