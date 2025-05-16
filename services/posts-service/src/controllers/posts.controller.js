@@ -173,23 +173,38 @@ export const getPosts = async (req, res) => {
     }
 }
 
-export const getPostComments = async (req, res) => {
-    const { postId } = req.params;
-    
+export const getPostWithComments = async (req, res) => {
     try {
+        const { postId } = req.params;
+
+        const post = await prisma.post.findUnique({
+            where: { id: postId },
+            include: {
+                comments: true,
+                likes: true
+            }
+        });
+        
         const comments = await prisma.post.findMany({
             where: {
                 parent_id: postId
             },
             include: {
+                comments: true,
                 likes: true
             },
             orderBy: {
                 created_at: 'desc'
             }
         });
-        res.json(comments);
+
+        const postWithComments = {
+            ...post,
+            comments: comments
+        };
+
+        res.json(postWithComments);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener los comentarios' });
+        res.status(500).json({ error: 'Error al obtener el post con comentarios' });
     }
 }

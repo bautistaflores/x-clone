@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react"
 import { likePostRequest } from "../api/posts"
+import { usePosts } from "../context/PostsContext"
 
 function PostCard({ post }) {
+    const { updatePostLike } = usePosts();
     // Inicializa el estado con la información del post
     const [isLiked, setIsLiked] = useState(post?.isLiked || false);
     const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
@@ -15,16 +17,19 @@ function PostCard({ post }) {
         }
     }, [post]);
 
-    const handleLike = async () => {
+    const handleLike = async (event) => {
+        event.stopPropagation();
         if (isLoading) return;
         
         setIsLoading(true);
         try {
             const response = await likePostRequest(post.id);
-            // Actualiza el estado basado en la respuesta del servidor
             const newIsLiked = response.data.action === 'like';
+            const newLikesCount = newIsLiked ? likesCount + 1 : likesCount - 1;
+            
             setIsLiked(newIsLiked);
-            setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
+            setLikesCount(newLikesCount);
+            updatePostLike(post.id, newIsLiked, newLikesCount);
         } catch (error) {
             console.error('Error al dar/quitar like:', error);
             // Revierte el estado en caso de error

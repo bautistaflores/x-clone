@@ -4,14 +4,20 @@ import { useAuth } from '../context/AuthContext';
 import { usePosts } from '../context/PostsContext';
 import PostCard from '../components/PostCard';
 import NotificationsDisplay from '../components/NotificationsDisplay';
+import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
     const { isAuthenticated, logout } = useAuth();
     const { getPosts, posts } = usePosts()
+    const navigate = useNavigate()
 
     useEffect(() => {
         getPosts()
     }, [])
+
+    const handlePostClick = (postId) => {
+        navigate(`/post/status/${postId}`);
+    };
 
     return (
         <div>
@@ -38,7 +44,13 @@ function HomePage() {
                 {
                     posts.length > 0 ? (
                         posts.map(post => (
-                            <PostCard post={post} key={post.id} />
+                            <div
+                                key={post.id}
+                                onClick={() => handlePostClick(post.id)}
+                                className="hover:cursor-pointer"
+                            >
+                                <PostCard post={post} />
+                            </div>
                         ))
                     ) : (
                         <h1>No hay posts</h1>

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPost, retweetPost, likePost, getPosts, getPostComments } from '../controllers/posts.controller.js';
+import { createPost, retweetPost, likePost, getPosts, getPostWithComments } from '../controllers/posts.controller.js';
 import { verifyToken } from '../middlewares/auth.js';
 
 const router = Router();
@@ -9,6 +9,6 @@ router.post('/:postId/retweet', verifyToken, retweetPost);
 router.post('/:postId/like', verifyToken, likePost);
 
 router.get('/', verifyToken, getPosts);
-router.get('/:postId/comments', getPostComments);
+router.get('/:postId', verifyToken, getPostWithComments);
 
 export default router;
