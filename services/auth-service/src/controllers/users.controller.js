@@ -166,3 +166,50 @@ export const verifyAuth = async (req, res) => {
         res.status(401).json({ error: 'Invalid token' });
     }
 };
+
+export const getUsersByIds = async (req, res) => {
+    try {
+        const { userIds } = req.body;
+        
+        if (!Array.isArray(userIds)) {
+            return res.status(400).json({ error: 'userIds debe ser un array' });
+        }
+
+        // Convertir los userIds a números (si tu ID en la base de datos es entero)
+        const parsedUserIds = userIds.map(id => parseInt(id));
+
+        const users = await prisma.user.findMany({
+            where: {
+                id: {
+                    in: parsedUserIds
+                }
+            },
+            select: {
+                id: true,
+                username: true,
+                profile: {
+                    select: {
+                        full_name: true,
+                        profile_picture: true
+                    }
+                }
+            }
+        });
+
+        // Transformar los datos para un formato más fácil de usar
+        const usersMap = users.reduce((acc, user) => {
+            acc[user.id] = {
+                id: user.id,
+                username: user.username,
+                full_name: user.profile?.full_name || 'Usuario',
+                profile_picture: user.profile?.profile_picture || null
+            };
+            return acc;
+        }, {});
+
+        res.json(usersMap);
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+};

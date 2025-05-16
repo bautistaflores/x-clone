@@ -246,7 +246,8 @@ export const getPosts = async (req, res) => {
             isRetweeted: retweet.originalPost.retweeters.some(r => String(r.user_id) === userId),
             type: 'retweet',
             retweetedBy: retweet.user_id,
-            retweetedAt: retweet.retweeted_at
+            retweetedAt: retweet.retweeted_at,
+            retweetedId: retweet.id
         }));
 
         // Combinar y ordenar por fecha

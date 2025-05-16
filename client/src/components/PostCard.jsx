@@ -1,28 +1,39 @@
 import React, { useState, useEffect } from "react"
 import { likePostRequest, retweetPostRequest } from "../api/posts"
 import { usePosts } from "../context/PostsContext"
+import { useUsers } from "../context/UsersContext"
 
 function PostCard({ post }) {
     const { updatePostLike, updateRetweet } = usePosts();
-    // Inicializa el estado con la información del post
+    // Obtener user por id
+    const { getUser, fetchUsers } = useUsers();
+
+    // Estado para el post
     const [isLiked, setIsLiked] = useState(post?.isLiked || false);
     const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
-
     const [isRetweeted, setIsRetweeted] = useState(post?.isRetweeted || false);
     const [retweetsCount, setRetweetsCount] = useState(post?.retweetsCount || 0);
-
     const [isLoading, setIsLoading] = useState(false);
 
-    // Actualiza el estado cuando cambia el post
+    // Efecto para actualizar el estado del post
     useEffect(() => {
         if (post) {
+            // Actualizar el estado del post
             setIsLiked(Boolean(post.isLiked));
             setLikesCount(post.likesCount || 0);
             setIsRetweeted(Boolean(post.isRetweeted));
             setRetweetsCount(post.retweetsCount || 0);
+
+            // Obtener información de usuarios
+            const userIds = [post.user_id];
+            if (post.type === 'retweet') {
+                userIds.push(post.retweetedBy);
+            }
+            fetchUsers(userIds);
         }
     }, [post]);
 
+    // Manejar like
     const handleLike = async (event) => {
         event.stopPropagation();
         if (isLoading) return;
@@ -38,13 +49,13 @@ function PostCard({ post }) {
             updatePostLike(post.id, newIsLiked, newLikesCount);
         } catch (error) {
             console.error('Error al dar/quitar like:', error);
-            // Revierte el estado en caso de error
             setIsLiked(!isLiked);
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Manejar retweet
     const handleRetweet = async (event) => {
         event.stopPropagation();
         if (isLoading) return;
@@ -60,23 +71,36 @@ function PostCard({ post }) {
             updateRetweet(post.id, newIsRetweeted, newRetweetsCount);
         } catch (error) {
             console.error('Error al retweetear/quitar retweet:', error);
-            // Revierte el estado en caso de error
             setIsRetweeted(!isRetweeted);
         } finally {
             setIsLoading(false);
         }
     }
 
+    const postUser = getUser(post.user_id);
+    const retweetUser = post.type === 'retweet' ? getUser(post.retweetedBy) : null;
+
     return (
         <div className="border border-gray-300 rounded-md p-4">
             {post.type === 'retweet' && (
                 <div className="text-gray-500 text-sm mb-2">
-                    Reposteado por user: {post.retweetedBy}
+                    Reposteado por: {retweetUser.full_name} (@{retweetUser.username})
                 </div>
             )}
-            <p>id: {post.id}</p>
-            <p>Post de user: {post.user_id}</p>
-            <p>{post.content}</p>
+            <div className="flex items-center gap-2 mb-2">
+                {postUser.profile_picture && (
+                    <img 
+                        src={postUser.profile_picture} 
+                        alt={postUser.username}
+                        className="w-10 h-10 rounded-full"
+                    />
+                )}
+                <div>
+                    <p className="font-bold">{postUser.full_name}</p>
+                    <p className="text-gray-500">@{postUser.username}</p>
+                </div>
+            </div>
+            <p className="mb-4">{post.content}</p>
             
             <div className="flex items-center gap-2">
                 <button 

@@ -4,11 +4,7 @@ import { useAuth } from '../context/AuthContext'; // Ajusta la ruta a tu context
 
 const NotificationDisplay = memo(() => {
     const { user } = useAuth();
-    const { notifications, isConnected } = useNotifications(user?.id);
-
-    useEffect(() => {
-        console.log("Estado de conexión:", isConnected ? "Conectado" : "Desconectado");
-    }, [isConnected, user]);
+    const { notifications } = useNotifications(user?.id);
 
     if (!user) {
         return <p>Debes iniciar sesión para ver las notificaciones.</p>;

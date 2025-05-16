@@ -45,7 +45,7 @@ function HomePage() {
                     posts.length > 0 ? (
                         posts.map(post => (
                             <div
-                                key={post.id}
+                                key={post.type === 'retweet' ? post.retweetedId : post.id}
                                 onClick={() => handlePostClick(post.id)}
                                 className="hover:cursor-pointer"
                             >
@@ -57,9 +57,7 @@ function HomePage() {
                     )
                 }
             </div>
-            <NotificationsDisplay />
         </div>
-
     )
 }
 

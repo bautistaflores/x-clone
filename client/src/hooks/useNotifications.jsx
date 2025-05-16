@@ -43,7 +43,6 @@ const useNotifications = (userId) => {
         socketRef.current = newSocket;
 
         newSocket.on('connect', () => {
-            console.log('Socket conectado con ID:', newSocket.id);
             setIsConnected(true);
             newSocket.emit('authenticate', userId);
         });
@@ -55,7 +54,6 @@ const useNotifications = (userId) => {
 
         // Manejar notificaciones previas
         newSocket.on('notifications', (previousNotifications) => {
-            console.log('Notificaciones previas recibidas:', previousNotifications);
             setNotifications(previousNotifications);
         });
 
