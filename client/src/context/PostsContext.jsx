@@ -17,18 +17,6 @@ export const PostsProvider = ({ children }) => {
         try {
             const res = await getPostsRequest()
             setPosts(res.data)
-            
-            // Si tenemos un post individual cargado, actualizamos su estado
-            if (post) {
-                const updatedPost = res.data.find(p => p.id === post.id)
-                if (updatedPost) {
-                    setPost(prevPost => ({
-                        ...prevPost,
-                        isLiked: updatedPost.isLiked,
-                        likesCount: updatedPost.likesCount
-                    }))
-                }
-            }
         } catch (error) {
             console.log(error)
         } 
@@ -37,18 +25,7 @@ export const PostsProvider = ({ children }) => {
     const getPostWithComments = async (postId) => {
         try {
             const res = await getPostWithCommentsRequest(postId)
-            
-            // Buscar el post en la lista de posts para mantener el estado del like
-            const existingPost = posts.find(p => p.id === postId)
-            if (existingPost) {
-                setPost({
-                    ...res.data,
-                    isLiked: existingPost.isLiked,
-                    likesCount: existingPost.likesCount
-                })
-            } else {
-                setPost(res.data)
-            }
+            setPost(res.data)
         } catch (error) {
             console.log(error)
         }

@@ -176,6 +176,7 @@ export const getPosts = async (req, res) => {
 export const getPostWithComments = async (req, res) => {
     try {
         const { postId } = req.params;
+        const userId = String(req.user?.userId);
 
         const post = await prisma.post.findUnique({
             where: { id: postId },
@@ -198,9 +199,23 @@ export const getPostWithComments = async (req, res) => {
             }
         });
 
-        const postWithComments = {
+        // Procesar el post principal
+        const processedPost = {
             ...post,
-            comments: comments
+            likesCount: post.likes.length,
+            isLiked: post.likes.some(like => String(like.user_id) === userId)
+        };
+
+        // Procesar los comentarios
+        const processedComments = comments.map(comment => ({
+            ...comment,
+            likesCount: comment.likes.length,
+            isLiked: comment.likes.some(like => String(like.user_id) === userId)
+        }));
+
+        const postWithComments = {
+            ...processedPost,
+            comments: processedComments
         };
 
         res.json(postWithComments);

@@ -4,26 +4,33 @@ import { usePosts } from '../context/PostsContext'
 import PostCard from '../components/PostCard'
 
 function PostPage() {
-    const { post, getPostWithComments, posts, getPosts } = usePosts()
+    const { post, getPostWithComments } = usePosts()
     const { postId } = useParams()
 
     useEffect(() => {
-        // Si no hay posts cargados, los cargamos primero
-        if (posts.length === 0) {
-            getPosts()
-        }
-        
         getPostWithComments(postId)
     }, [postId])
 
-    // Si el post existe en la lista de posts, usamos ese estado
-    const postFromList = posts.find(p => p.id === postId)
-    const displayPost = postFromList || post
-
     return (
         <div>
-            {displayPost ? (
-                <PostCard post={displayPost} />
+            {post ? (
+                <>
+                    <PostCard post={post} />
+                    
+                    {/* Sección de comentarios */}
+                    <div className="mt-8">
+                        <h2 className="text-xl font-bold mb-4">Comentarios</h2>
+                        {post.comments && post.comments.length > 0 ? (
+                            post.comments.map(comment => (
+                                <div key={comment.id}>
+                                    <PostCard post={comment} />
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500">No hay comentarios aún</p>
+                        )}
+                    </div>
+                </>
             ) : (
                 <p>Cargando post...</p>
             )}
