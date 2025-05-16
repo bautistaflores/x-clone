@@ -10,7 +10,7 @@ function RegisterPage() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/')
+            navigate('/home')
         }
     }, [isAuthenticated])
 

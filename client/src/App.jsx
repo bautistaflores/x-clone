@@ -5,6 +5,7 @@ import { PostsProvider } from "./context/PostsContext"
 import RegisterPage from "./pages/RegisterPage"
 import LoginPage from "./pages/LoginPage"
 import HomePage from "./pages/HomePage"
+import ProtectedRoute from "./ProtectedRoute"
 
 function App() {
 
@@ -13,9 +14,11 @@ function App() {
       <PostsProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<LoginPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/home" element={<HomePage />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </PostsProvider>
