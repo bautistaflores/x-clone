@@ -25,7 +25,8 @@ export const register = async (req, res) => {
         // Nombre por defecto del perfil
         const randomId = Math.floor(Math.random() * 1000000); // Generate a random ID
         const defaultProfile = {
-            full_name: `user${randomId}`
+            full_name: `user${randomId}`,
+            profile_picture: `/profile_pictures/default_profile.webp`
         }
 
         // Encriptar contraseña

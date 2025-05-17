@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePosts } from '../context/PostsContext';
 import PostCard from '../components/PostCard';
-import NotificationsDisplay from '../components/NotificationsDisplay';
 import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
@@ -21,7 +20,6 @@ function HomePage() {
 
     return (
         <div>
-            <h1>Home</h1>
             {isAuthenticated ? (
                 <ul>
                     <li>

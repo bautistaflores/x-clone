@@ -6,7 +6,13 @@ function ProtectedRoute() {
 
     if (!loading && !isAuthenticated) return <Navigate to="/" replace />
 
-    return <Outlet />
+    return (
+        <div>
+            <a href="/">Home</a>
+            <a href="/notificaciones" className="ml-4">Notificaciones</a>
+            <Outlet />
+        </div>
+    )
 }
 
 export default ProtectedRoute
