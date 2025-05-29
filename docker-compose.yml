@@ -104,7 +104,7 @@ services:
       - "80:80" # Nginx escucha en el puerto 80 del host
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # :ro para solo lectura
-      - ./services/auth-service/public/images:/app/services/auth-service/public/images
+      - ./services/auth-service/public/profile_pictures:/app/services/auth-service/public/profile_pictures
     depends_on:
       - frontend
       - auth-service

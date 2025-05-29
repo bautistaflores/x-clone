@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage"
 import PostPage from "./pages/PostPage"
 import ProtectedRoute from "./ProtectedRoute"
 import NotificationsDisplay from "./components/NotificationsDisplay"
+import UpdateProfilePage from "./pages/UpdateProfilePage"
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/post/status/:postId" element={<PostPage />} />
                 <Route path="/notificaciones" element={<NotificationsDisplay />} />
+                <Route path="/update-profile" element={<UpdateProfilePage />} />
               </Route>
             </Routes>
           </BrowserRouter>
