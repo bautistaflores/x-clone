@@ -10,6 +10,7 @@ function ProtectedRoute() {
         <div>
             <a href="/">Home</a>
             <a href="/notificaciones" className="ml-4">Notificaciones</a>
+            <a href="/update-profile" className="ml-4">Update Profile</a>
             <Outlet />
         </div>
     )

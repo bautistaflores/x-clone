@@ -1,4 +1,11 @@
 import prisma from '../../prisma/prisma.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const getProfiles = async (req, res) => {
     try {
@@ -52,12 +59,33 @@ export const updateProfile = async (req, res) => {
 }
 
 export const uploadProfilePicture = async (req, res) => {
+    const UPLOADS_BASE_DIR = path.join(__dirname, '..', '..', 'public'); 
+    const DEFAULT_PROFILE_PICTURE_DB_PATH = '/images/default_profile.webp'
+
     try {
+        // Si no se proporciona ninguna imagen, se devuelve un error
         if (!req.file) {
             return res.status(400).json({ error: 'No se ha proporcionado ninguna imagen' });
         }
 
         const userId = req.userId;
+ 
+        // Busca la imagen de perfil del usuario en la base de datos
+        const existingProfile = await prisma.profile.findUnique({
+            where: { user_id: userId },
+            select: { 
+                profile_picture: true
+            }
+        });
+
+        // Si no se encuentra la imagen de perfil, se devuelve un error
+        if (!existingProfile) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+
+        // Obtiene la ruta de la imagen de perfil antigua
+        const oldImagePath = existingProfile.profile_picture;
+
         // Usar ruta absoluta para la imagen
         const imagePath = `/profile_pictures/${userId}/${req.file.filename}`;
 
@@ -66,6 +94,25 @@ export const uploadProfilePicture = async (req, res) => {
             where: { user_id: userId },
             data: { profile_picture: imagePath }
         });
+
+        // obtiene ruta de img antigua y ruta de img por defecto
+        const oldAbsoluteImagePath = path.join(UPLOADS_BASE_DIR, oldImagePath);
+        const defaultAbsolutePath = path.join(UPLOADS_BASE_DIR, DEFAULT_PROFILE_PICTURE_DB_PATH);
+
+        // Si la img antigua existe y no es la img por defecto y no es la misma img que se está subiendo, se elimina
+        if (oldImagePath && 
+            oldAbsoluteImagePath !== defaultAbsolutePath &&
+            oldImagePath !== imagePath
+           ) 
+        {
+            fs.unlink(oldAbsoluteImagePath, (err) => {
+                if (err) {
+                    console.error(`Error al eliminar la foto de perfil antigua '${oldAbsoluteImagePath}':`, err);
+                } else {
+                    console.log(`Foto de perfil antigua eliminada: ${oldAbsoluteImagePath}`);
+                }
+            });
+        }
 
         res.json({
             success: true,
