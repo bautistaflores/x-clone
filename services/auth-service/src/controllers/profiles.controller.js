@@ -45,6 +45,21 @@ export const getProfile = async (req, res) => {
     }
 };
 
+export const getMyProfile = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const profile = await prisma.profile.findUnique({
+            where: { user_id: userId }
+        });
+
+        res.json(profile);
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ error: 'Error fetching profile' });
+    }
+}
+
 export const updateProfile = async (req, res) => {
     const { full_name, bio } = req.body;
     const userId = req.userId;

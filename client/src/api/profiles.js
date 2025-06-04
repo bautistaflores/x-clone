@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const getProfileRequest = (username) => api.get(`/profiles/${username}`);
+export const getMyProfileRequest = () => api.get('/profiles/me');
 
 // Actualizar información del perfil (nombre y bio)
 export const updateProfileRequest = (profileData) => api.put('/profiles/update', profileData);

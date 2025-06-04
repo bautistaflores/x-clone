@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProfileRequest, updateProfileRequest, uploadProfilePictureRequest } from '../api/profiles';
+import { getMyProfileRequest, updateProfileRequest, uploadProfilePictureRequest } from '../api/profiles';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,7 +22,7 @@ function UpdateProfilePage() {
             return
         }
 
-        getProfileRequest().then(res => {
+        getMyProfileRequest().then(res => {
             setFormData(res.data);
         });
 
