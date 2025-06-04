@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react"
 import { likePostRequest, retweetPostRequest } from "../api/posts"
 import { usePosts } from "../context/PostsContext"
 import { useUsers } from "../context/UsersContext"
+import { useNavigate } from 'react-router-dom';
 
 function PostCard({ post }) {
     const { updatePostLike, updateRetweet } = usePosts();
     // Obtener user por id
     const { getUser, fetchUsers } = useUsers();
+    const navigate = useNavigate();
 
     // Estado para el post
     const [isLiked, setIsLiked] = useState(post?.isLiked || false);
@@ -77,6 +79,11 @@ function PostCard({ post }) {
         }
     }
 
+    const handleProfileClick = (event, username) => {
+        event.stopPropagation();
+        navigate(`/${username}`);
+    };
+
     const postUser = getUser(post.user_id);
     const retweetUser = post.type === 'retweet' ? getUser(post.retweetedBy) : null;
 
@@ -92,12 +99,23 @@ function PostCard({ post }) {
                     <img 
                         src={postUser.profile_picture} 
                         alt={postUser.username}
-                        className="w-10 h-10 rounded-full"
+                        className="w-10 h-10 rounded-full cursor-pointer"
+                        onClick={(e) => handleProfileClick(e, postUser.username)}
                     />
                 )}
                 <div>
-                    <p className="font-bold">{postUser.full_name}</p>
-                    <p className="text-gray-500">@{postUser.username}</p>
+                    <p 
+                        className="font-bold cursor-pointer hover:underline"
+                        onClick={(e) => handleProfileClick(e, postUser.username)}
+                    >
+                        {postUser.full_name}
+                    </p>
+                    <p 
+                        className="text-gray-500 cursor-pointer"
+                        onClick={(e) => handleProfileClick(e, postUser.username)}
+                    >
+                        @{postUser.username}
+                    </p>
                 </div>
             </div>
             <p className="mb-4">{post.content}</p>

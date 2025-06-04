@@ -96,7 +96,7 @@ function UpdateProfilePage() {
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                                     <img 
-                                        src={formData.profile_picture || ''} 
+                                        src={formData.profile_picture || 'img'} 
                                         alt="Preview" 
                                         className="w-full h-full object-cover"
                                     />

@@ -17,18 +17,28 @@ export const getProfiles = async (req, res) => {
 }
 
 export const getProfile = async (req, res) => {
-    const userId = req.userId;
+    const username = req.params.username;
 
     try {
-        const profile = await prisma.profile.findUnique({
-            where: { user_id: userId }
+        const fullProfile = await prisma.user.findUnique({
+            where: { username: username },
+            select: {
+                username: true,
+                profile: {
+                    select: {
+                        full_name: true,
+                        bio: true,
+                        profile_picture: true
+                    }
+                }
+            }
         });
 
-        if (!profile) {
+        if (!fullProfile) {
             return res.status(404).json({ error: 'Profile not found' });
         }
 
-        res.json(profile);
+        res.json(fullProfile);
     } catch (error) {
         console.error('Error fetching profile:', error);
         res.status(500).json({ error: 'Error fetching profile' });

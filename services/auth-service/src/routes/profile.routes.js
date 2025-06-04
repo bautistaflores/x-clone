@@ -6,7 +6,7 @@ import { authenticate } from '../middlewares/auth.js';
 const router = Router();
 
 // Rutas de perfil
-router.get('/', authenticate, getProfile);
+router.get('/:username', authenticate, getProfile);
 router.put('/update', authenticate, updateProfile);
 router.put('/update/picture', authenticate, upload.single('profile_picture'), uploadProfilePicture);
 
