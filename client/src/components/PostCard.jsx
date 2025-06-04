@@ -3,8 +3,9 @@ import { likePostRequest, retweetPostRequest } from "../api/posts"
 import { usePosts } from "../context/PostsContext"
 import { useUsers } from "../context/UsersContext"
 import { useNavigate } from 'react-router-dom';
+import { formatPostTimestamp } from "../utils/formatPostTimestamp";
 
-function PostCard({ post }) {
+function PostCard({ post, isComment = false }) {
     const { updatePostLike, updateRetweet } = usePosts();
     // Obtener user por id
     const { getUser, fetchUsers } = useUsers();
@@ -28,10 +29,10 @@ function PostCard({ post }) {
 
             // Obtener información de usuarios
             const userIds = [post.user_id];
-            if (post.type === 'retweet') {
+            if (post.type === 'retweet' && post.retweetedBy) {
                 userIds.push(post.retweetedBy);
             }
-            fetchUsers(userIds);
+            fetchUsers(userIds, fetchUsers);
         }
     }, [post]);
 
@@ -81,17 +82,22 @@ function PostCard({ post }) {
 
     const handleProfileClick = (event, username) => {
         event.stopPropagation();
-        navigate(`/${username}`);
+        navigate(`/${username}`); // O /profiles/${username}
     };
 
     const postUser = getUser(post.user_id);
-    const retweetUser = post.type === 'retweet' ? getUser(post.retweetedBy) : null;
+    const retweetUser = post.type === 'retweet' && post.retweetedBy ? getUser(post.retweetedBy) : null;
 
     return (
         <div className="border border-gray-300 rounded-md p-4">
             {post.type === 'retweet' && (
                 <div className="text-gray-500 text-sm mb-2">
-                    Reposteado por: {retweetUser.full_name} (@{retweetUser.username})
+                    <p 
+                        className="text-gray-500 hover:underline"
+                        onClick={(e) => handleProfileClick(e, retweetUser.username)}
+                    >
+                        {retweetUser.full_name} reposteó
+                    </p>
                 </div>
             )}
             <div className="flex items-center gap-2 mb-2">
@@ -115,6 +121,11 @@ function PostCard({ post }) {
                         onClick={(e) => handleProfileClick(e, postUser.username)}
                     >
                         @{postUser.username}
+                    </p>
+
+                    {/* Fecha de publicación formateada */}
+                    <p className="text-gray-500 text-xs mb-2">
+                        {formatPostTimestamp(post.created_at, isComment)}
                     </p>
                 </div>
             </div>
@@ -148,3 +159,4 @@ function PostCard({ post }) {
 }
 
 export default PostCard
+
