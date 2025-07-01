@@ -37,6 +37,7 @@ function ProfilePage() {
     return (
         <div>
             <h1 >{profile.username}</h1>
+            <a href="/update-profile">Update Profile</a>
  
             {profile.profile?.full_name && ( 
                 <h2>{profile.profile.full_name}</h2>

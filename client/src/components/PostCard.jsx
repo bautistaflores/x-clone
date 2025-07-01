@@ -5,6 +5,9 @@ import { useUsers } from "../context/UsersContext"
 import { useNavigate } from 'react-router-dom';
 import { formatPostTimestamp } from "../utils/formatPostTimestamp";
 
+import RetweetIcon from "./Icons/RetweetIcon";
+import LikeIcon from "./Icons/LikeIcon";
+
 function PostCard({ post, isComment = false }) {
     const { updatePostLike, updateRetweet } = usePosts();
     // Obtener user por id
@@ -89,70 +92,98 @@ function PostCard({ post, isComment = false }) {
     const retweetUser = post.type === 'retweet' && post.retweetedBy ? getUser(post.retweetedBy) : null;
 
     return (
-        <div className="border border-gray-300 rounded-md p-4">
+        <div className="border border-gray-600 px-4 py-2">
             {post.type === 'retweet' && (
-                <div className="text-gray-500 text-sm mb-2">
-                    <p 
-                        className="text-gray-500 hover:underline"
-                        onClick={(e) => handleProfileClick(e, retweetUser.username)}
-                    >
-                        {retweetUser.full_name} reposteó
-                    </p>
+                <div className="mx-6 mb-1">
+                    <div className="text-gray-600 text-sm flex items-center gap-2">
+                        <RetweetIcon isRetweeted={isRetweeted} width={16} height={16} />
+                        <p 
+                            className="text-gray-600 hover:underline font-semibold"
+                            onClick={(e) => handleProfileClick(e, retweetUser.username)}
+                        >
+                            {retweetUser.full_name} reposteó
+                        </p>
+                    </div>
                 </div>
             )}
-            <div className="flex items-center gap-2 mb-2">
-                {postUser.profile_picture && (
-                    <img 
-                        src={postUser.profile_picture} 
-                        alt={postUser.username}
-                        className="w-10 h-10 rounded-full cursor-pointer"
-                        onClick={(e) => handleProfileClick(e, postUser.username)}
-                    />
-                )}
-                <div>
-                    <p 
-                        className="font-bold cursor-pointer hover:underline"
-                        onClick={(e) => handleProfileClick(e, postUser.username)}
-                    >
-                        {postUser.full_name}
-                    </p>
-                    <p 
-                        className="text-gray-500 cursor-pointer"
-                        onClick={(e) => handleProfileClick(e, postUser.username)}
-                    >
-                        @{postUser.username}
-                    </p>
-
-                    {/* Fecha de publicación formateada */}
-                    <p className="text-gray-500 text-xs mb-2">
-                        {formatPostTimestamp(post.created_at, isComment)}
-                    </p>
+            <div className="flex gap-2">
+                {/* Imagen de perfil */}
+                <div className="flex-shrink-0 w-auto">
+                    {postUser.profile_picture && (
+                        <img 
+                            src={postUser.profile_picture} 
+                            alt={postUser.username}
+                            className="w-10 h-10 rounded-full cursor-pointer"
+                            onClick={(e) => handleProfileClick(e, postUser.username)}
+                        />
+                    )}
                 </div>
-            </div>
-            <p className="mb-4">{post.content}</p>
-            
-            <div className="flex items-center gap-2">
-                <button 
-                    onClick={handleLike}
-                    disabled={isLoading}
-                    className={`bg-blue-500 text-white py-2 px-4 rounded-md ${
-                        isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:cursor-pointer'
-                    }`}>
-                    {isLoading ? 'Procesando...' : isLiked ? 'Unlike' : 'Like'}
-                </button>
-                <span>{likesCount} likes</span>
-            </div>
 
-            <div className="flex items-center gap-2">
-                <button 
-                    onClick={handleRetweet}
-                    disabled={isLoading}
-                    className={`bg-green-500 text-white py-2 px-4 rounded-md ${
-                        isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:cursor-pointer'
-                    }`}>
-                    {isLoading ? 'Procesando...' : isRetweeted ? 'Unretweet' : 'Retweet'}
-                </button>
-                <span>{retweetsCount} retweets</span>
+                {/* Content */}
+                <div className="flex-grow">
+                    <div className="flex items-center gap-2">
+                        <div className="flex flex-row gap-1">
+                            <p 
+                                className="font-bold hover:underline"
+                                onClick={(e) => handleProfileClick(e, postUser.username)}
+                            >
+                                {postUser.full_name}
+                            </p>
+                            <p 
+                                className="text-gray-600"
+                                onClick={(e) => handleProfileClick(e, postUser.username)}
+                            >
+                                @{postUser.username}
+                            </p>
+                            <p className="text-gray-600">•</p>
+
+                            {/* Fecha de publicación formateada */}
+                            <p className="text-gray-600 hover:underline">
+                                {formatPostTimestamp(post.created_at, isComment)}.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p>{post.content}</p>
+                    </div>
+                    
+                    <div className="flex flex-rows">
+                        <div>
+                            <button 
+                                onClick={handleRetweet}
+                                disabled={isLoading}
+                                className={`flex items-center justify-center gap-2 p-2 rounded-full 
+                                    ${isRetweeted ? 'text-green-500' : 'hover:text-green-500'}
+                                    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                }`}>
+
+                                {/* Retweet icon */}
+                                <RetweetIcon isRetweeted={isRetweeted} />
+
+                                {/* Retweets count */}
+                                <span>{retweetsCount}</span>
+                            </button>
+                        </div>
+
+                        <div>
+                            <button 
+                                onClick={handleLike}
+                                disabled={isLoading}
+                                className={`flex items-center justify-center gap-2 p-2 rounded-full
+                                    ${isLiked ? 'text-red-500' : ' hover:text-red-500'}
+                                    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                }`}>
+
+                                {/* Like icon */}
+                                <LikeIcon isLiked={isLiked} />
+
+                                {/* Likes count */}
+                                <span>{likesCount}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )

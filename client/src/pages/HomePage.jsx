@@ -19,25 +19,7 @@ function HomePage() {
     };
 
     return (
-        <div>
-            {isAuthenticated ? (
-                <ul>
-                    <li>
-                        <Link to='/' onClick={() => { logout() }}>Logout</Link>
-                    </li>
-                </ul>
-            ) : (
-                <ul>
-                    <li>
-                        <Link to="/login">Login</Link>
-                    </li>
-                    <li>
-                        <Link to="/register">Register</Link>
-                    </li>
-                </ul>
-            )}
-
-
+        <div className="w-[600px]">
             <div>
                 {
                     posts.length > 0 ? (

@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "./context/AuthContext"
+import Header from "./components/Header"
 
 function ProtectedRoute() {
     const { loading, isAuthenticated } = useAuth()
@@ -7,10 +8,8 @@ function ProtectedRoute() {
     if (!loading && !isAuthenticated) return <Navigate to="/" replace />
 
     return (
-        <div>
-            <a href="/">Home</a>
-            <a href="/notificaciones" className="ml-4">Notificaciones</a>
-            <a href="/update-profile" className="ml-4">Update Profile</a>
+        <div className="flex w-full min-h-screen">
+            <Header />
             <Outlet />
         </div>
     )
