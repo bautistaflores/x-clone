@@ -1,5 +1,5 @@
 import { useAuth } from "../context/AuthContext"
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import LogoIcon from "../components/Icons/LogoIcon";
 import HomeIcon from "../components/Icons/HomeIcon";
@@ -8,38 +8,40 @@ import PerfilIcon from "../components/Icons/PerfilIcon";
 
 function Header() {
     const { user, logout } = useAuth()
+    
+    const location = useLocation()
 
     return (
-        <header className="w-3/10 justify-items-end">
+        <header className="fixed w-3/10 justify-items-end">
             <div className="flex flex-col px-4 max-w-screen-lg text-xl">
-                <a href="/">
+                <Link to="/">
                     <div className="inline-flex items-center hover:bg-[#1e1e1e] rounded-full p-4 m-2">
                         <LogoIcon height={30} width={30}/>
                     </div>
-                </a>
-                <a href="/">
+                </Link>
+                <Link to="/">
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                         <HomeIcon height={25} width={25} />
                         <span>Inicio</span>
                     </div>
-                </a>
-                <a href="/notificaciones">
+                </Link>
+                <Link to="/notificaciones">
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                         <NotificationIcon height={25} width={25} />
                         <span>Notificaciones</span>
                     </div>
-                </a>
-                <a href={`/${user.username}`}>
+                </Link>
+                <Link to={`/${user.username}`}>
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                         <PerfilIcon height={25} width={25} />
                         <span>Perfil</span>
                     </div>
-                </a>
-                <a href="/">
+                </Link>
+                <Link to="/compose/post" state={{ background: location }}>
                     <div className="gap-2 px-4 py-2 m-2">
                         <span className="cursor-pointer bg-white text-black px-18 py-2.5 hover:bg-gray-200 font-semibold text-lg rounded-full">Postear</span>
                     </div>
-                </a>
+                </Link>
                 <Link to='/' onClick={() => { logout() }}>
                     <div className="inline-flex items-center gap-2 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                         <span>Logout</span>
