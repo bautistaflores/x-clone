@@ -27,7 +27,7 @@ function HomePage() {
                             <div
                                 key={post.type === 'retweet' ? post.retweetedId : post.id}
                                 onClick={() => handlePostClick(post.id)}
-                                className="hover:cursor-pointer"
+                                className="hover:cursor-pointer hover:bg-[#070707]"
                             >
                                 <PostCard post={post} />
                             </div>

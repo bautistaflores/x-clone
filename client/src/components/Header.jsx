@@ -12,14 +12,14 @@ function Header() {
     const location = useLocation()
 
     return (
-        <header className="fixed w-3/10 justify-items-end">
+        <header className="fixed top-0 left-0 w-3/10 justify-items-end">
             <div className="flex flex-col px-4 max-w-screen-lg text-xl">
-                <Link to="/">
+                <Link to="/home">
                     <div className="inline-flex items-center hover:bg-[#1e1e1e] rounded-full p-4 m-2">
                         <LogoIcon height={30} width={30}/>
                     </div>
                 </Link>
-                <Link to="/">
+                <Link to="/home">
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                         <HomeIcon height={25} width={25} />
                         <span>Inicio</span>

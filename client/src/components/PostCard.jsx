@@ -144,22 +144,24 @@ function PostCard({ post, isComment = false }) {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="pb-2">
                         <p>{post.content}</p>
                     </div>
                     
-                    <div className="flex flex-rows">
+                    <div className="flex flex-rows gap-2">
                         <div>
                             <button 
                                 onClick={handleRetweet}
                                 disabled={isLoading}
-                                className={`flex items-center justify-center gap-2 p-2 rounded-full 
+                                className={`group flex items-center justify-center rounded-full
                                     ${isRetweeted ? 'text-green-500' : 'hover:text-green-500'}
-                                    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                    ${isLoading ? 'opacity-50' : 'cursor-pointer'}
                                 }`}>
 
                                 {/* Retweet icon */}
-                                <RetweetIcon isRetweeted={isRetweeted} />
+                                <div className="group-hover:bg-green-500/10 rounded-full p-1.5">
+                                    <RetweetIcon isRetweeted={isRetweeted} />
+                                </div>
 
                                 {/* Retweets count */}
                                 <span>{retweetsCount}</span>
@@ -170,13 +172,15 @@ function PostCard({ post, isComment = false }) {
                             <button 
                                 onClick={handleLike}
                                 disabled={isLoading}
-                                className={`flex items-center justify-center gap-2 p-2 rounded-full
+                                className={`group flex items-center justify-center rounded-full
                                     ${isLiked ? 'text-red-500' : ' hover:text-red-500'}
-                                    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                    ${isLoading ? 'opacity-50' : 'cursor-pointer'}
                                 }`}>
 
                                 {/* Like icon */}
-                                <LikeIcon isLiked={isLiked} />
+                                <div className="group-hover:bg-red-500/10 rounded-full p-1.5">
+                                    <LikeIcon isLiked={isLiked} />
+                                </div>
 
                                 {/* Likes count */}
                                 <span>{likesCount}</span>

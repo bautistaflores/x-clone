@@ -6,6 +6,10 @@ import Header from "./components/Header"
 function ProtectedRoute() {
     const { loading, isAuthenticated } = useAuth()
 
+    if (loading) {
+        return <div>Cargando...</div>
+    }
+
     if (!loading && !isAuthenticated) return <Navigate to="/" replace />
 
     return (

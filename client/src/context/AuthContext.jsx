@@ -24,6 +24,8 @@ export const AuthProvider = ({ children }) => {
                 setIsAuthenticated(true)
             } catch (error) {
                 console.log('No hay sesión activa')
+                setIsAuthenticated(false)
+                setUser(null)
             } finally {
                 setLoading(false)
             }
@@ -75,10 +77,6 @@ export const AuthProvider = ({ children }) => {
         }
     }, [errors])
 
-    if (loading) {
-        return <div>Cargando...</div>
-    }
-
     return (
         <AuthContext.Provider value={{
             signup,
@@ -87,6 +85,7 @@ export const AuthProvider = ({ children }) => {
             user,
             isAuthenticated,
             errors,
+            loading,
         }}>
             {children}
         </AuthContext.Provider>
