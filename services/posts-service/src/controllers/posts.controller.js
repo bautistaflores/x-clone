@@ -2,6 +2,7 @@ import prisma from '../../prisma/prisma.js';
 
 export const createPost = async (req, res) => {
     const { content, parentId } = req.body;
+    const { file } = req;
     const userId = String(req.user.userId); 
 
     try {
@@ -16,10 +17,14 @@ export const createPost = async (req, res) => {
             }
         }
 
+        // se guarda la URL de la imagen
+        const imageUrl = file ? `/imagePost/${userId}/${file.filename}` : null;
+
         const newPost = await prisma.post.create({
             data: {
                 user_id: userId,
                 content,
+                media_url: imageUrl || null,
                 parent_id: parentId || null,
             },
             include: {
@@ -28,6 +33,7 @@ export const createPost = async (req, res) => {
             }
         });
 
+        console.log(newPost);
         res.status(201).json(newPost);
     } catch (error) {
         console.error('Error creating post:', error);

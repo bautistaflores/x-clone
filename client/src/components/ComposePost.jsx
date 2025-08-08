@@ -27,7 +27,7 @@ function ComposePost() {
 
     const remainingCharacters = MAX_CHARACTERS - content.length;
 
-    const isButtonDisabled = content.trim().length === 0 || content.length > MAX_CHARACTERS;
+    const isButtonDisabled = (content.trim().length === 0 && !selectedImage) || content.length > MAX_CHARACTERS;
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -74,8 +74,16 @@ function ComposePost() {
     // postear
     const handlePostSubmit = async () => {
         if (!isButtonDisabled) {
-            await createPost({ content })
+            const formData = new FormData();
+            formData.append('content', content);
+            if (selectedImage) {
+                formData.append('image', selectedImage);
+            }
+            await createPost(formData)
+
             setContent('');
+            setSelectedImage(null);
+            setPreviewImage(null);
             handleCloseModal();
         }
     }

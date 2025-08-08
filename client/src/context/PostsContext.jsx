@@ -13,9 +13,9 @@ export const PostsProvider = ({ children }) => {
     const [posts, setPosts] = useState([])
     const [post, setPost] = useState(null)
 
-    const createPost = async (post) => {
+    const createPost = async (formData) => {
         try {
-            const res = await createPostRequest(post)
+            const res = await createPostRequest(formData)
             setPosts(prevPosts => [res.data, ...prevPosts])
         } catch (error) {
             console.log(error)

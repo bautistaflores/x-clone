@@ -5,7 +5,6 @@ import usersRoutes from './routes/users.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
 
 const app = express();
 
@@ -21,7 +20,7 @@ app.use(cors({
     credentials: true, // Para cookies JWT y sesiones
 }));
 
-// Servir archivos estáticos - IMPORTANTE: Debe ir después de CORS
+// Servir archivos estáticos
 app.use('/images', express.static(path.join(__dirname, '../public/images')));
 app.use('/profile_pictures', express.static(path.join(__dirname, '../public/profile_pictures'), {
     setHeaders: (res, path) => {

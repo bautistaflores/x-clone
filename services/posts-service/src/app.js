@@ -3,8 +3,13 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import postsRoutes from './routes/posts.routes.js';
 import { createClient } from 'redis';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuración de Redis
 const redisClient = createClient({
@@ -29,6 +34,13 @@ app.use(cookieParser());
 app.use(cors({
   origin: "http://localhost", // El frontend se accede desde nginx
   credentials: true, // Para cookies JWT y sesiones
+}));
+
+// Servir archivos estáticos 
+app.use('/imagePost', express.static(path.join(__dirname, '../public/imagePosts'), {
+    setHeaders: (res, path) => {
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
 }));
 
 app.use('/posts', postsRoutes);

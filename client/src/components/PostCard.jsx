@@ -145,7 +145,13 @@ function PostCard({ post, isComment = false }) {
                     </div>
 
                     <div className="pb-2">
+                        {/* contenido */}
                         <p>{post.content}</p>
+
+                        {/* imagen */}
+                        {post.media_url && (
+                            <img src={`${post.media_url}`} alt="Post" className="w-full h-auto rounded-2xl mt-4" />
+                        )}
                     </div>
                     
                     <div className="flex flex-rows gap-2">
