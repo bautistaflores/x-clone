@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react"
-import { getPostsRequest, getPostWithCommentsRequest, createPostRequest } from "../api/posts"
+import { getPostsRequest, getPostWithCommentsRequest, createPostRequest, getPostsByUsernameRequest } from "../api/posts"
 
 export const PostsContext = createContext()
 
@@ -29,6 +29,15 @@ export const PostsProvider = ({ children }) => {
         } catch (error) {
             console.log(error)
         } 
+    }
+
+    const getPostsByUsername = async (username) => {
+        try {
+            const res = await getPostsByUsernameRequest(username)
+            setPosts(res.data)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const getPostWithComments = async (postId) => {
@@ -85,6 +94,7 @@ export const PostsProvider = ({ children }) => {
             posts,
             createPost,
             getPosts,
+            getPostsByUsername,
             post,
             getPostWithComments,
             updatePostLike,

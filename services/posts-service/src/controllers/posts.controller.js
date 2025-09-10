@@ -1,4 +1,5 @@
 import prisma from '../../prisma/prisma.js';
+import axios from 'axios';
 
 export const createPost = async (req, res) => {
     const { content, parentId } = req.body;
@@ -198,15 +199,57 @@ export const likePost = async (req, res) => {
 }
 
 
+
 export const getPosts = async (req, res) => {
+    // para consumir el servicio de usuarios
+    const USERS_SERVICE_URL = 'http://auth-service:3000/auth';
+    
     try {
-        const userId = String(req.user?.userId);
-        
+        let profileUserId = null;
+        const userId = String(req.user?.userId); // id del usuario logueado
+
+        // Para filtrar posts por usuario mediante el username
+        const username = req.params.username;
+
+        if (username) {
+            try {
+                // obtiene el token para verificar
+                const authCookie = req.cookies.token;
+
+                if (!authCookie) {
+                    return res.status(401).json({ error: 'No autorizado: El token no se encontró en la cookie.' });
+                }
+
+                //Llamada a auth-service para obtener el id del usuario mediante el username
+                const userRes = await axios.get(`${USERS_SERVICE_URL}/${username}`, {
+                    headers: {
+                        Cookie: `token=${authCookie}`
+                    }
+                });
+                
+                // Extrae el ID del usuario del objeto de respuesta
+                const user = userRes.data;
+                if (user) {
+                    profileUserId = String(user.id);
+                } else {
+                    return res.status(404).json({ error: 'El usuario no existe' });
+                }
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    return res.status(404).json({ error: 'El usuario no existe' });
+                }
+                console.error('Error al obtener el usuario:', error);
+                return res.status(500).json({ error: 'Error al comunicarse con el servicio de usuarios' });
+            }
+        }
+
+        // Si hay un ID de perfil, filtra para la consulta
+        const postConIdUsuario = profileUserId ? { user_id: profileUserId, parent_id: null } : { parent_id: null };
+        const retweetConIdUsuario = profileUserId ? { user_id: profileUserId } : {};
+
         // Obtener posts normales
         const posts = await prisma.post.findMany({
-            where: {
-                parent_id: null // Solo posts principales, no comentarios
-            },
+            where: postConIdUsuario,
             include: {
                 comments: true,
                 likes: true,
@@ -219,6 +262,7 @@ export const getPosts = async (req, res) => {
 
         // Obtener retweets
         const retweets = await prisma.retweet.findMany({
+            where: retweetConIdUsuario,
             include: {
                 originalPost: {
                     include: {
@@ -265,6 +309,7 @@ export const getPosts = async (req, res) => {
 
         res.json(allContent);
     } catch (error) {
+        console.error('Error al obtener los posts:', error);
         res.status(500).json({ error: 'Error al obtener los posts' });
     }
 }

@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const getPostsRequest = () => api.get('/posts');
+export const getPostsByUsernameRequest = (username) => api.get(`/posts/u/${username}`);
 export const createPostRequest = (formData) => api.post('/posts/create', formData, {
     headers: {
         'Content-Type': 'multipart/form-data'

@@ -214,3 +214,16 @@ export const getUsersByIds = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener usuarios' });
     }
 };
+
+// Para los post por username
+export const getUserByUsername = async (req, res) => {
+    const { username } = req.params;
+    const user = await prisma.user.findUnique({
+        where: { username },
+        select: { id: true }
+    });
+    if (!user) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.json(user);
+};

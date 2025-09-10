@@ -20,6 +20,7 @@ model Notification {
   toUserId    String
   postId      String?     // opcional: post relacionado
   commentId   Int?     // opcional: comentario relacionado
+  read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   @@index([toUserId])
