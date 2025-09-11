@@ -21,19 +21,19 @@ function Header() {
                 </Link>
                 <Link to="/home">
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
-                        <HomeIcon height={25} width={25} />
+                        <HomeIcon height={25} width={25} isActive={location.pathname === '/home'} />
                         <span>Inicio</span>
                     </div>
                 </Link>
                 <Link to="/notificaciones">
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
-                        <NotificationIcon height={25} width={25} />
+                        <NotificationIcon height={25} width={25} isActive={location.pathname === '/notificaciones'} />
                         <span>Notificaciones</span>
                     </div>
                 </Link>
                 <Link to={`/${user.username}`}>
                     <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
-                        <PerfilIcon height={25} width={25} />
+                        <PerfilIcon height={25} width={25} isActive={location.pathname === `/${user.username}`} />
                         <span>Perfil</span>
                     </div>
                 </Link>

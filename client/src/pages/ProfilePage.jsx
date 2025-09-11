@@ -48,7 +48,7 @@ function ProfilePage() {
     }
 
     return (
-        <div className="w-[600px]">
+        <div className="">
             <div className="border-l border-r border-b border-gray-600">
                 <div className="px-4 py-3">   
                     <div className="flex flex-row gap-2 justify-between">

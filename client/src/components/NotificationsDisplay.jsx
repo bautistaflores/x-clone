@@ -11,7 +11,7 @@ const NotificationDisplay = memo(() => {
     }
 
     return (
-        <div>
+        <div className="border border-gray-600">
             <h3>Notificaciones</h3>
             {notifications.length === 0 ? (
                 <p>No tienes notificaciones.</p>
