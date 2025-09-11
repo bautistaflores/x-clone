@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePosts } from '../context/PostsContext';
 import PostCard from '../components/PostCard';
 import { useNavigate } from 'react-router-dom';
+import ComposePostHome from '../components/ComposePostHome';
 
 function HomePage() {
     const { isAuthenticated, logout } = useAuth();
@@ -20,6 +21,7 @@ function HomePage() {
 
     return (
         <div className="w-[600px]">
+            <ComposePostHome />
             <div>
                 {
                     posts.length > 0 ? (
