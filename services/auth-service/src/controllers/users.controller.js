@@ -46,13 +46,26 @@ export const register = async (req, res) => {
                 profile: true,
             }
         })
+
+        // Generar token
+        const token = generateToken(newUser.id);
+
+        // Guardar token en Redis
+        await redisClient.set(`jwt:${token}`, 'valid', { EX: 3600 });
+
+        // 5. Enviar token al cliente (y datos de usuario si es necesario)
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'Lax',
+            maxAge: 3600000
+        })
     
         res.status(201).json({
+            token,
             user: {
               id: newUser.id,
               username: newUser.username,
-              email: newUser.email,
-              password: newUser.password
+              email: newUser.email
             },
             profile: {
               full_name: newUser.profile.full_name

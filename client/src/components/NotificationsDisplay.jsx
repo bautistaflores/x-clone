@@ -10,29 +10,36 @@ const NotificationDisplay = memo(() => {
         return <p>Debes iniciar sesión para ver las notificaciones.</p>;
     }
 
+    const filteredNotifications = notifications.filter(notification => String(user.id) !== notification.fromUserId);
+
     return (
-        <div className="border border-gray-600">
-            <h3>Notificaciones</h3>
-            {notifications.length === 0 ? (
-                <p>No tienes notificaciones.</p>
-            ) : (
-                <ul>
-                    {notifications.map((notification, index) => (
-                        <li key={index}> 
-                            {notification.type === 'LIKE' && String(user.id) !== notification.fromUserId && (
-                                <span>
-                                    Usuario {notification.fromUserId} le dio like a tu post {notification.postId}
-                                </span>
-                            )}
-                            {notification.type === 'RETWEET' && String(user.id) !== notification.fromUserId && (
-                                <span>
-                                    Usuario {notification.fromUserId} retweeteo tu post {notification.postId}
-                                </span>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
+        <div className="min-h-[1000px] border-t border-l border-r border-gray-600">
+            <div className="px-4 border-b border-gray-600">
+                <h3 className="text-xl font-bold py-4">Notificaciones</h3>
+            </div>
+
+            <div className="">
+                {filteredNotifications.length === 0 ? (
+                    <p className="border-b border-gray-600">No tienes notificaciones.</p>
+                ) : (
+                    <ul>
+                        {filteredNotifications.map((notification, index) => (
+                            <li key={index} className="border-b border-gray-600">
+                                {notification.type === 'LIKE' && String(user.id) !== notification.fromUserId && (
+                                    <span>
+                                        Usuario {notification.fromUserId} le dio like a tu post {notification.postId}
+                                    </span>
+                                )}
+                                {notification.type === 'RETWEET' && String(user.id) !== notification.fromUserId && (
+                                    <span>
+                                        Usuario {notification.fromUserId} retweeteo tu post {notification.postId}
+                                    </span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
         </div>
     );
 });

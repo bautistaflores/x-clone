@@ -39,8 +39,14 @@ export const AuthProvider = ({ children }) => {
             console.log(res.data)
             setUser(res.data.user)
             setIsAuthenticated(true)
+            setErrors([])
         } catch (error) {
-            setErrors(error.response.data)
+            console.log("Error de registro", error.response)
+            if (error.response && error.response.data) {
+                setErrors(Array.isArray(error.response.data) ? error.response.data : [error.response.data.error || "Error aca"]);
+            } else {
+                setErrors(["Error desconocido al registrar"]);
+            }
         }
     }
 

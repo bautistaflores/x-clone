@@ -15,7 +15,7 @@ function ProtectedRoute() {
     return (
         <div className="min-h-screen">
             <Header />
-            <div className="absolute left-3/10 top-0 right-0 overflow-y-auto w-[600px]">
+            <div className="absolute left-[31.23%] top-0 right-0 w-[600px]">
                 <Outlet />
             </div>
         </div>

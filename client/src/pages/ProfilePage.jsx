@@ -23,13 +23,13 @@ function ProfilePage() {
         navigate(`/post/status/${postId}`);
     };
 
-    if (loading) {
-        return (
-            <div>
-                <p>Cargando perfil...</p>
-            </div>
-        )
-    }
+    // if (loading) {
+    //     return (
+    //         <div>
+    //             <p>Cargando perfil...</p>
+    //         </div>
+    //     )
+    // }
 
     if (error) {
         return (
