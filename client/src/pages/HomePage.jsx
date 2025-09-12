@@ -25,7 +25,9 @@ function HomePage() {
             <ComposePostHome />
             <div>
                 {postsLoading ? (
-                    <LoadingIcon />
+                    <div className="h-[1000px] border-x border-gray-500/50">
+                        <LoadingIcon />
+                    </div>
                 ) : (
                     posts.length > 0 ? (
                         posts.map(post => (
@@ -38,7 +40,9 @@ function HomePage() {
                             </div>
                         ))
                     ) : (
-                        <h1>No hay posts</h1>
+                        <div className="h-[1000px] border-x border-gray-500/50">
+                            <h1 className="text-center font-bold text-xl text-gray-500">. . .</h1>
+                        </div>
                     )
                 )}
             </div>

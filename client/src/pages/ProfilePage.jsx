@@ -50,7 +50,7 @@ function ProfilePage() {
 
     return (
         <div className="">
-            <div className="border-l border-r border-b border-gray-600">
+            <div className="border-l border-r border-b border-gray-500/50">
                 <div className="px-4 py-3">   
                     <div className="flex flex-row gap-2 justify-between">
                         {/* Foto de perfil y boton update profile */}
@@ -73,7 +73,7 @@ function ProfilePage() {
                             )}
                         </div>
                         <div>
-                            <a href="/update-profile" className="font-bold border border-gray-600 rounded-full px-4 py-2 hover:bg-gray-600/20 duration-200">Editar perfil</a>
+                            <a href="/update-profile" className="font-bold border border-gray-500/50 rounded-full px-4 py-2 hover:bg-gray-500/20 duration-200">Editar perfil</a>
                         </div>
                     </div>
 
@@ -98,7 +98,9 @@ function ProfilePage() {
             {/* posts del perfil */}
             <div>
                 {postsLoading ? (
-                    <LoadingIcon />
+                    <div className="h-[1000px] border-x border-gray-500/50">
+                        <LoadingIcon />
+                    </div>
                 ) : (
                     posts.length > 0 ? (
                         posts.map(post => (
@@ -111,7 +113,9 @@ function ProfilePage() {
                             </div>
                         ))
                     ) : (
-                        <h1>No hay posts</h1>
+                        <div className="h-[1000px] border-x border-gray-500/50">
+                            <h1 className="text-center font-bold text-xl text-gray-500">. . .</h1>
+                        </div>
                     )
                 )}
             </div>

@@ -80,8 +80,8 @@ const NotificationDisplay = memo(() => {
     const filteredNotifications = notifications.filter(notification => String(user.id) !== notification.fromUserId);
 
     return (
-        <div className="min-h-[1000px] border-t border-l border-r border-gray-600">
-            <div className="px-4 border-b border-gray-600">
+        <div className="min-h-[1000px] border-t border-l border-r border-gray-500/50">
+            <div className="px-4 border-b border-gray-500/50">
                 <h3 className="text-xl font-bold py-4">Notificaciones</h3>
             </div>
 
@@ -90,7 +90,7 @@ const NotificationDisplay = memo(() => {
                     <LoadingIcon />
                 ) : (
                     filteredNotifications.length === 0 ? (
-                        <p className="border-b border-gray-600">No tienes notificaciones.</p>
+                        <p className="border-b border-gray-500/50">No tienes notificaciones.</p>
                     ) : (
                         <div>
                             {filteredNotifications.map((notification, index) => {
@@ -154,7 +154,7 @@ const NotificationDisplay = memo(() => {
                                             </div>
                                             
                                             {!post ? (
-                                                <p className="text-gray-400 text-sm">Cargando post...</p>
+                                                <p className="text-gray-400 text-sm">. . .</p>
                                             ) : (
                                                 <div>
                                                     {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}

@@ -94,7 +94,7 @@ function PostCard({ post, isComment = false }) {
     const retweetUser = post.type === 'retweet' && post.retweetedBy ? getUser(post.retweetedBy) : null;
 
     return (
-        <div className="border-l border-r border-b border-gray-600 px-4 py-2">
+        <div className="border-x border-b border-gray-500/50 px-4 py-2">
             {/* Retweet */}
             {post.type === 'retweet' && (
                 <div className="mx-6 mb-1">

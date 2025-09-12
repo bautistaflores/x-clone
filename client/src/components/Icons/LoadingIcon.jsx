@@ -2,7 +2,7 @@ import React from 'react';
 
 function LoadingIcon({ className }) {
     return (
-        <div className="flex justify-center items-center h-full mt-5">
+        <div className="flex justify-center h-full py-5">
             <svg
                 className={className + "w-10 h-10 animate-[spin_1s_linear_infinite]"}
                 xmlns="http://www.w3.org/2000/svg"
