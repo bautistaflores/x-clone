@@ -314,6 +314,25 @@ export const getPosts = async (req, res) => {
     }
 }
 
+export const getPostById = async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const post = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post no encontrado' });
+        }
+
+        res.json(post);
+    } catch (error) {
+        console.error('Error al obtener el post:', error);
+        res.status(500).json({ error: 'Error al obtener el post' });
+    }
+}
+
 export const getPostWithComments = async (req, res) => {
     try {
         const { postId } = req.params;

@@ -1,6 +1,7 @@
 import React, { useEffect, memo, useState } from 'react';
 import useNotifications from '../hooks/useNotifications'; 
 import { useAuth } from '../context/AuthContext'; 
+import { usePosts } from '../context/PostsContext';
 import { getProfileRequestById } from '../api/profiles';
 import LikeIcon from './Icons/LikeIcon';
 import RetweetIcon from './Icons/RetweetIcon';
@@ -8,8 +9,11 @@ import { useNavigate } from 'react-router-dom';
 
 const NotificationDisplay = memo(() => {
     const { user } = useAuth();
+    const { getPostById } = usePosts();
     const { notifications } = useNotifications(user?.id);
     const [userProfiles, setUserProfiles] = useState({});
+    const [postDetails, setPostDetails] = useState({});
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     
     if (!user) {
@@ -29,11 +33,36 @@ const NotificationDisplay = memo(() => {
         }
     };
 
-    // Obtener el perfil de los usuarios de cada notificacion
+    // Obtener el post notificado
+    const fetchPostDetails = async (postId) => {
+        try {
+            const post = await getPostById(postId);
+            setPostDetails(prev => ({
+                ...prev,
+                [postId]: post
+            }));
+        } catch (error) {
+            console.error(`Error al obtener el post con ID ${postId}:`, error);
+        }
+    };
+
+    // Obtener el perfil de los usuarios y post de cada notificacion
     useEffect(() => {
-        notifications.forEach(notification => {
-            fetchUserProfile(notification.fromUserId);
-        });
+        const fetchData = async () => {
+            setLoading(true);
+            await Promise.all(
+                notifications.map(async (notification) => {
+                    await fetchUserProfile(notification.fromUserId);
+                    await fetchPostDetails(notification.postId);
+                })
+            );
+            setLoading(false);
+        };
+        if (notifications.length > 0) {
+            fetchData();
+        } else {
+            setLoading(false);
+        }
     }, [notifications]);
 
     const handleProfileClick = (event, username) => {
@@ -64,6 +93,7 @@ const NotificationDisplay = memo(() => {
                             const userUsername = userProfiles[notification.fromUserId]?.username;
                             const userFullName = userProfiles[notification.fromUserId]?.profile?.full_name;
                             const userProfilePicture = userProfiles[notification.fromUserId]?.profile?.profile_picture;
+                            const post = postDetails[notification.postId];
 
                             // Icono y texto de la notificacion
                             let notificationIcon;
@@ -118,6 +148,18 @@ const NotificationDisplay = memo(() => {
                                         <div className='mt-2'>
                                             {notificationText}
                                         </div>
+                                        
+                                        {!post ? (
+                                            <p className="text-gray-400 text-sm">Cargando post...</p>
+                                        ) : (
+                                            <div>
+                                                {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}
+                                                {post.media_url && <img src={post.media_url} alt="Post" className='rounded-lg mb-3'/>}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className='ml-8'>
                                     </div>
                                 </div>
                             )

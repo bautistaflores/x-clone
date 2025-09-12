@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPost, retweetPost, likePost, getPosts, getPostWithComments } from '../controllers/posts.controller.js';
+import { createPost, retweetPost, likePost, getPosts, getPostWithComments, getPostById } from '../controllers/posts.controller.js';
 import { verifyToken } from '../middlewares/auth.js';
 import upload from '../middlewares/upload.middleware.js';
 
@@ -12,5 +12,6 @@ router.post('/:postId/like', verifyToken, likePost);
 router.get('/', verifyToken, getPosts);
 router.get('/u/:username', verifyToken, getPosts);
 router.get('/:postId', verifyToken, getPostWithComments);
+router.get('/id/:postId', verifyToken, getPostById);
 
 export default router;
