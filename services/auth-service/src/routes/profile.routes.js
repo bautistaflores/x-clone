@@ -8,6 +8,7 @@ const router = Router();
 // Rutas de perfil
 router.get('/me', authenticate, getMyProfile);
 router.get('/:username', authenticate, getProfile);
+router.get('/userId/:userId', authenticate, getProfile);
 router.put('/update', authenticate, updateProfile);
 router.put('/update/picture', authenticate, upload.single('profile_picture'), uploadProfilePicture);
 

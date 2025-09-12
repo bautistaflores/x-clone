@@ -1,10 +1,10 @@
 import React from 'react';
 
-function LikeIcon({ isLiked, width = 20, height = 20 }) {
+function LikeIcon({ isLiked, width = 20, height = 20, color = 'currentColor' }) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 24 24" 
-        fill={isLiked ? 'red' : 'none'} stroke={'currentColor'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+        fill={isLiked ? 'red' : 'none'} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z" />
         </svg>
     );
 }

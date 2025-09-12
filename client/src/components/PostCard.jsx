@@ -87,7 +87,7 @@ function PostCard({ post, isComment = false }) {
 
     const handleProfileClick = (event, username) => {
         event.stopPropagation();
-        navigate(`/${username}`); // O /profiles/${username}
+        navigate(`/${username}`);
     };
 
     const postUser = getUser(post.user_id);

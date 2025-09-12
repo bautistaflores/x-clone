@@ -17,11 +17,21 @@ export const getProfiles = async (req, res) => {
 }
 
 export const getProfile = async (req, res) => {
-    const username = req.params.username;
+    const { userId, username} = req.params;
 
     try {
+        let condicion = {};
+
+        if (userId) {
+            condicion = { id: Number(userId) };
+        } else if (username) {
+            condicion = { username: username };
+        } else {
+            return res.status(400).json({ error: 'userId o username son requeridos' });
+        }
+
         const fullProfile = await prisma.user.findUnique({
-            where: { username: username },
+            where: condicion,
             select: {
                 username: true,
                 profile: {

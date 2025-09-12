@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useCallback } from "react" // <-- Importa useCallback
-import { getProfileRequest } from "../api/profiles"
+import { getProfileRequest, getProfileRequestById } from "../api/profiles"
 
 export const ProfilesContext = createContext()
 
@@ -31,11 +31,29 @@ export const ProfileProvider = ({ children }) => {
         }
     }, [])
 
+    const getProfileById = useCallback(async (userId) => {
+        setLoading(true)
+        setError(null)
+        try {
+            const response = await getProfileRequestById(userId)
+            setProfile(response.data)
+            return response.data
+        } catch (error) {
+            console.error('Error al obtener el perfil:', error)
+            setError(error.response?.data?.error || 'No se pudo cargar el perfil.')
+            setProfile(null)
+            throw error
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
     return (
         <ProfilesContext.Provider 
             value={{ 
                 profile, 
                 getProfile,
+                getProfileById,
                 loading,
                 error
             }}>
