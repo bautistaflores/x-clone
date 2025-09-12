@@ -4,11 +4,12 @@ import { useProfiles } from "../context/ProfilesContext"
 import { usePosts } from "../context/PostsContext"
 import PostCard from "../components/PostCard"
 import { useNavigate } from 'react-router-dom';
+import LoadingIcon from "../components/Icons/LoadingIcon"
 
 function ProfilePage() {
-    const { profile, getProfile, loading, error } = useProfiles()
+    const { profile, getProfile, loading: profileLoading, error } = useProfiles()
     const { username } = useParams()
-    const { posts, getPostsByUsername } = usePosts()
+    const { posts, getPostsByUsername, loading: postsLoading } = usePosts()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -96,7 +97,9 @@ function ProfilePage() {
 
             {/* posts del perfil */}
             <div>
-                {
+                {postsLoading ? (
+                    <LoadingIcon />
+                ) : (
                     posts.length > 0 ? (
                         posts.map(post => (
                             <div
@@ -110,7 +113,7 @@ function ProfilePage() {
                     ) : (
                         <h1>No hay posts</h1>
                     )
-                }
+                )}
             </div>
         </div>
     )

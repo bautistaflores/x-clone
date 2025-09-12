@@ -5,6 +5,7 @@ import { usePosts } from '../context/PostsContext';
 import { getProfileRequestById } from '../api/profiles';
 import LikeIcon from './Icons/LikeIcon';
 import RetweetIcon from './Icons/RetweetIcon';
+import LoadingIcon from './Icons/LoadingIcon';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationDisplay = memo(() => {
@@ -85,86 +86,90 @@ const NotificationDisplay = memo(() => {
             </div>
 
             <div className="">
-                {filteredNotifications.length === 0 ? (
-                    <p className="border-b border-gray-600">No tienes notificaciones.</p>
+                {loading ? (
+                    <LoadingIcon />
                 ) : (
-                    <div>
-                        {filteredNotifications.map((notification, index) => {
-                            const userUsername = userProfiles[notification.fromUserId]?.username;
-                            const userFullName = userProfiles[notification.fromUserId]?.profile?.full_name;
-                            const userProfilePicture = userProfiles[notification.fromUserId]?.profile?.profile_picture;
-                            const post = postDetails[notification.postId];
+                    filteredNotifications.length === 0 ? (
+                        <p className="border-b border-gray-600">No tienes notificaciones.</p>
+                    ) : (
+                        <div>
+                            {filteredNotifications.map((notification, index) => {
+                                const userUsername = userProfiles[notification.fromUserId]?.username;
+                                const userFullName = userProfiles[notification.fromUserId]?.profile?.full_name;
+                                const userProfilePicture = userProfiles[notification.fromUserId]?.profile?.profile_picture;
+                                const post = postDetails[notification.postId];
 
-                            // Icono y texto de la notificacion
-                            let notificationIcon;
-                            let notificationText;
+                                // Icono y texto de la notificacion
+                                let notificationIcon;
+                                let notificationText;
 
-                            if (notification.type === 'LIKE' && String(user.id) !== notification.fromUserId ) {
-                                notificationIcon = <LikeIcon height={29} width={29} isLiked={true} color="red" />;
-                                notificationText = (
-                                    <span>
-                                        <span 
-                                            className="font-bold hover:underline" 
-                                            onClick={(e) => handleProfileClick(e, userUsername)}>
-                                                {userFullName} 
-                                        </span> 
-                                        <span> indicó que le gusta tu post</span>
-                                    </span>
-                                );
-                            } else if (notification.type === 'RETWEET' && String(user.id) !== notification.fromUserId ) {
-                                notificationIcon = <RetweetIcon height={29} width={29} isRetweeted={true} color="#22C55E" />;
-                                notificationText = (
-                                    <span>
-                                        <span 
-                                            className="font-bold hover:underline" 
-                                            onClick={(e) => handleProfileClick(e, userUsername)}>
-                                                {userFullName}
-                                        </span> 
-                                        <span> retweeteó tu post</span>
-                                    </span>
-                                );
-                            }
+                                if (notification.type === 'LIKE' && String(user.id) !== notification.fromUserId ) {
+                                    notificationIcon = <LikeIcon height={29} width={29} isLiked={true} color="red" />;
+                                    notificationText = (
+                                        <span>
+                                            <span 
+                                                className="font-bold hover:underline" 
+                                                onClick={(e) => handleProfileClick(e, userUsername)}>
+                                                    {userFullName} 
+                                            </span> 
+                                            <span> indicó que le gusta tu post</span>
+                                        </span>
+                                    );
+                                } else if (notification.type === 'RETWEET' && String(user.id) !== notification.fromUserId ) {
+                                    notificationIcon = <RetweetIcon height={29} width={29} isRetweeted={true} color="#22C55E" />;
+                                    notificationText = (
+                                        <span>
+                                            <span 
+                                                className="font-bold hover:underline" 
+                                                onClick={(e) => handleProfileClick(e, userUsername)}>
+                                                    {userFullName}
+                                            </span> 
+                                            <span> retweeteó tu post</span>
+                                        </span>
+                                    );
+                                }
 
-                            return (
-                                <div key={index} onClick={(e) => handlePostClick(e, notification.postId)} className="flex border-b border-gray-600 py-3 px-4 hover:cursor-pointer">
-                                    {/* Icono de la notificacion */}
-                                    <div className="mr-2">
-                                        {notificationIcon}
-                                    </div>
+                                return (
+                                    <div key={index} onClick={(e) => handlePostClick(e, notification.postId)} className="flex border-b border-gray-600 py-3 px-4 hover:cursor-pointer">
+                                        {/* Icono de la notificacion */}
+                                        <div className="mr-2">
+                                            {notificationIcon}
+                                        </div>
 
-                                    <div>
-                                        {/* Imagen de perfil */}
                                         <div>
-                                            {userProfilePicture && (
-                                                <img 
-                                                    src={userProfilePicture} 
-                                                    alt={userFullName}
-                                                    className="w-8 h-8 rounded-full"
-                                                />
+                                            {/* Imagen de perfil */}
+                                            <div>
+                                                {userProfilePicture && (
+                                                    <img 
+                                                        src={userProfilePicture} 
+                                                        alt={userFullName}
+                                                        className="w-8 h-8 rounded-full"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            {/* texto de notificacion */}
+                                            <div className='mt-2'>
+                                                {notificationText}
+                                            </div>
+                                            
+                                            {!post ? (
+                                                <p className="text-gray-400 text-sm">Cargando post...</p>
+                                            ) : (
+                                                <div>
+                                                    {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}
+                                                    {post.media_url && <img src={post.media_url} alt="Post" className='rounded-lg mb-3'/>}
+                                                </div>
                                             )}
                                         </div>
 
-                                        {/* texto de notificacion */}
-                                        <div className='mt-2'>
-                                            {notificationText}
+                                        <div className='ml-8'>
                                         </div>
-                                        
-                                        {!post ? (
-                                            <p className="text-gray-400 text-sm">Cargando post...</p>
-                                        ) : (
-                                            <div>
-                                                {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}
-                                                {post.media_url && <img src={post.media_url} alt="Post" className='rounded-lg mb-3'/>}
-                                            </div>
-                                        )}
                                     </div>
-
-                                    <div className='ml-8'>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
+                                )
+                            })}
+                        </div>
+                    )
                 )}
             </div>
         </div>

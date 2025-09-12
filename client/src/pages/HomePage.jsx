@@ -5,10 +5,11 @@ import { usePosts } from '../context/PostsContext';
 import PostCard from '../components/PostCard';
 import { useNavigate } from 'react-router-dom';
 import ComposePostHome from '../components/ComposePostHome';
+import LoadingIcon from "../components/Icons/LoadingIcon"
 
 function HomePage() {
     const { isAuthenticated, logout } = useAuth();
-    const { getPosts, posts } = usePosts()
+    const { getPosts, posts, loading: postsLoading } = usePosts()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -23,7 +24,9 @@ function HomePage() {
         <div className="w-[600px]">
             <ComposePostHome />
             <div>
-                {
+                {postsLoading ? (
+                    <LoadingIcon />
+                ) : (
                     posts.length > 0 ? (
                         posts.map(post => (
                             <div
@@ -37,7 +40,7 @@ function HomePage() {
                     ) : (
                         <h1>No hay posts</h1>
                     )
-                }
+                )}
             </div>
         </div>
     )

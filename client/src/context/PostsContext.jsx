@@ -12,6 +12,7 @@ export const usePosts = () => {
 export const PostsProvider = ({ children }) => {
     const [posts, setPosts] = useState([])
     const [post, setPost] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     const createPost = async (formData) => {
         try {
@@ -24,28 +25,37 @@ export const PostsProvider = ({ children }) => {
 
     const getPosts = async () => {
         try {
+            setLoading(true)
             const res = await getPostsRequest()
             setPosts(res.data)
         } catch (error) {
             console.log(error)
-        } 
+        } finally {
+            setLoading(false)
+        }
     }
 
     const getPostsByUsername = async (username) => {
         try {
+            setLoading(true)
             const res = await getPostsByUsernameRequest(username)
             setPosts(res.data)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
     const getPostWithComments = async (postId) => {
         try {
+            setLoading(true)
             const res = await getPostWithCommentsRequest(postId)
             setPost(res.data)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -109,7 +119,8 @@ export const PostsProvider = ({ children }) => {
             getPostWithComments,
             getPostById,
             updatePostLike,
-            updateRetweet
+            updateRetweet,
+            loading
         }}>
             {children}
         </PostsContext.Provider>
