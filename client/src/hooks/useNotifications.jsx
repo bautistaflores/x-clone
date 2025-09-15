@@ -59,9 +59,26 @@ const useNotifications = (userId) => {
 
         // Manejar nuevas notificaciones
         newSocket.on('notification', (newNotification) => {
-            console.log("Nueva notificación recibida:", newNotification);
-            setNotifications(prev => [newNotification, ...prev]);
+            setNotifications(prev => {
+                const safePrev = Array.isArray(prev) ? prev : [];
+        
+                const exists = safePrev.some(
+                    n => n.type === newNotification.type 
+                      && n.postId === newNotification.postId 
+                      && n.fromUserId === newNotification.fromUserId
+                );
+        
+                console.log("Nueva notificación recibida:", newNotification);
+        
+                if (exists) return safePrev;
+        
+                // Si estoy en /notificaciones, la marco como leída automáticamente
+                const isRead = window.location.pathname === "/notificaciones";
+        
+                return [{ ...newNotification, read: isRead }, ...safePrev];
+            });
         });
+        
 
         newSocket.on('disconnect', (reason) => {
             console.log('Socket desconectado. Razón:', reason);
