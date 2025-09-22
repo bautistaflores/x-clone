@@ -2,18 +2,21 @@ import ImgIcon from "./Icons/imgIcon";
 import { usePosts } from "../context/PostsContext";
 import { useAuth } from "../context/AuthContext";
 import { useProfiles } from "../context/ProfilesContext";
+import { useUsers } from "../context/UsersContext";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { formatPostTimestamp } from "../utils/formatPostTimestamp";
 import CloseIcon from "./Icons/CloseIcon";
 
 const MAX_CHARACTERS = 280;
 
 function FormPost({isModal = false}) {
     // context
-    const { createPost } = usePosts()
+    const { createPost, getPostById, post } = usePosts()
     const { user, isAuthenticated } = useAuth()
     const { profile, getProfile } = useProfiles()
-    
+    const { getUser } = useUsers()
+
     // states
     const [content, setContent] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
@@ -34,6 +37,9 @@ function FormPost({isModal = false}) {
     useEffect(() => {
         if (isAuthenticated) {
             getProfile(user?.username)
+            if (parentId) {
+                getPostById(parentId)
+            }
         }
     }, [isAuthenticated, user?.username, getProfile])
 
@@ -67,13 +73,20 @@ function FormPost({isModal = false}) {
     }
 
     // postear
+    const parentId = location.state?.parentId || null;
     const handlePostSubmit = async () => {
         if (!isButtonDisabled) {
             const formData = new FormData();
             formData.append('content', content);
+
+            if (parentId) {
+                formData.append('parentId', parentId);
+            }
+
             if (selectedImage) {
                 formData.append('image', selectedImage);
             }
+
             await createPost(formData)
 
             setContent('');
@@ -95,10 +108,70 @@ function FormPost({isModal = false}) {
         }
     }
 
+
+    const postUser = getUser(post?.user_id);
+    
     return (
         <div className="p-3">
-            {/* imagen de perfil */}
-            <div className="flex gap-3 mt-4 ml-1">
+            {/* Si es comentario */}
+            {parentId && (
+                <div>
+                    <div className="flex gap-3 mt-2 ml-1 pb-2">
+                        {/* imagen de perfil del usuario que posteo */}
+                        <div className="flex flex-col flex-shrink-0 w-auto">
+                            {postUser.profile_picture && (
+                                <img 
+                                    src={postUser.profile_picture} 
+                                    alt={postUser.username}
+                                    className="w-10 h-10 rounded-full cursor-pointer"
+                                    onClick={(e) => handleProfileClick(e, postUser.username)}
+                                />
+                            )}
+
+                            <div className="flex-grow w-full flex justify-center">
+                                <div className="border-l-2 border-gray-500/50 h-full"></div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-grow">
+                            <div className="flex items-center gap-2">
+                                <div className="flex flex-row gap-1">
+                                    <p 
+                                        className="font-bold"
+                                    >
+                                        {postUser.full_name}
+                                    </p>
+                                    <p 
+                                        className="text-gray-600"
+                                    >
+                                        @{postUser.username}
+                                    </p>
+                                    <p className="text-gray-600 font-bold">·</p>
+
+                                    {/* Fecha de publicación formateada */}
+                                    {post?.created_at ? (
+                                        <p className="text-gray-600">
+                                            {formatPostTimestamp(post?.created_at, location.pathname, true)}
+                                        </p>
+                                    ) : (
+                                        ""
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="pb-2">
+                                {/* contenido */}
+                                <p>{post?.content}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Seccion postear */}
+            <div className="flex gap-3 mt-2 ml-1">
+                {/* imagen de perfil */}
                 <div className="flex-shrink-0 w-auto">
                     {profile?.profile?.profile_picture && (
                         <img 
@@ -114,7 +187,7 @@ function FormPost({isModal = false}) {
                     <textarea 
                         ref={textareaRef}
                         className={`w-full bg-transparent text-xl focus:outline-none placeholder-gray-500 resize-none overflow-hidden ${isModal ? (previewImage ? 'pb' : 'pb-12') : 'pb'}`} 
-                        placeholder="¿Qué está pasando?"
+                        placeholder={parentId ? "Postea tu respuesta" : "¿Qué está pasando?"}
                         value={content}
                         onChange={handleContentChange}
                     ></textarea>

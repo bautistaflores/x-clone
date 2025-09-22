@@ -1,10 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import { usePosts } from "../context/PostsContext";
-import { useAuth } from "../context/AuthContext";
-import { useProfiles } from "../context/ProfilesContext";
 import CloseIcon from "./Icons/CloseIcon";
-import ImgIcon from "./Icons/imgIcon";
 import FormPost from "./FormPost";
 
 

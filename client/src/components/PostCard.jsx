@@ -3,11 +3,13 @@ import { likePostRequest, retweetPostRequest } from "../api/posts"
 import { usePosts } from "../context/PostsContext"
 import { useUsers } from "../context/UsersContext"
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { formatPostTimestamp } from "../utils/formatPostTimestamp";
+import { Link } from 'react-router-dom';
 
 import RetweetIcon from "./Icons/RetweetIcon";
 import LikeIcon from "./Icons/LikeIcon";
+import CommentIcon from "./Icons/CommentIcon";
 
 function PostCard({ post, isComment = false }) {
     const { updatePostLike, updateRetweet } = usePosts();
@@ -21,7 +23,10 @@ function PostCard({ post, isComment = false }) {
     const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
     const [isRetweeted, setIsRetweeted] = useState(post?.isRetweeted || false);
     const [retweetsCount, setRetweetsCount] = useState(post?.retweetsCount || 0);
+    const [isCommented, setIsCommented] = useState(post?.isCommented || false);
+    const [commentsCount, setCommentsCount] = useState(post?.commentsCount || 0);
     const [isLoading, setIsLoading] = useState(false);
+    const location = useLocation()
 
     // Efecto para actualizar el estado del post
     useEffect(() => {
@@ -85,6 +90,11 @@ function PostCard({ post, isComment = false }) {
         }
     }
 
+    const handleComment = (event) => {
+        event.stopPropagation();
+        navigate(`/compose/post`, { state: { parentId: post.id, background: location } });
+    }
+
     const handleProfileClick = (event, username) => {
         event.stopPropagation();
         navigate(`/${username}`);
@@ -145,11 +155,11 @@ function PostCard({ post, isComment = false }) {
                             >
                                 @{postUser.username}
                             </p>
-                            <p className="text-gray-600">•</p>
+                            <p className="text-gray-600 font-bold">·</p>
 
                             {/* Fecha de publicación formateada */}
                             <p className="text-gray-600 hover:underline">
-                                {formatPostTimestamp(post.created_at, isComment)}.
+                                {formatPostTimestamp(post.created_at, location.pathname, isComment)}.
                             </p>
                         </div>
                     </div>
@@ -200,6 +210,22 @@ function PostCard({ post, isComment = false }) {
 
                                 {/* Likes count */}
                                 <span>{likesCount}</span>
+                            </button>
+                        </div>
+
+                        <div>
+                            <button
+                                onClick={handleComment}
+                                disabled={isLoading}
+                                className={`group flex items-center justify-center rounded-full
+                                    ${isCommented ? 'text-blue-500' : 'hover:text-blue-400'}
+                                    ${isLoading ? 'opacity-50' : 'cursor-pointer'}
+                                }`}>
+
+                                {/* Comment icon */}
+                                <div className="group-hover:bg-blue-500/15 rounded-full p-1.5">
+                                    <CommentIcon />
+                                </div>
                             </button>
                         </div>
                     </div>

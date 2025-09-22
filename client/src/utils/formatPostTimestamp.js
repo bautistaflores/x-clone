@@ -2,10 +2,9 @@
 import { useLocation } from 'react-router-dom';
 
 // Agregamos el parámetro isComment con un valor por defecto de false
-export function formatPostTimestamp(isoString, isComment = false) { 
+export function formatPostTimestamp(isoString, pathname, isComment = false) { 
     const postDate = new Date(isoString);
     const now = new Date();
-    const location = useLocation();
 
     const diffMs = now.getTime() - postDate.getTime();
     const oneSecondMs = 1000;
@@ -13,11 +12,7 @@ export function formatPostTimestamp(isoString, isComment = false) {
     const oneHourMs = 60 * oneMinuteMs;
     const oneDayMs = 24 * oneHourMs;
 
-    // Decidimos si usar el formato corto (relativo o día/mes)
-    // Se usa el formato corto si:
-    // 1. Estamos en la página /home (location.pathname === '/')
-    // 2. O si esta PostCard específica ha sido marcada como un comentario (isComment es true)
-    const shouldUseShortFormat = location.pathname === '/home' || isComment;
+    const shouldUseShortFormat = pathname === '/home' || isComment;
 
     if (shouldUseShortFormat) {
         // Lógica para el formato corto (Xh, Xm, Xs, día mes [año])
