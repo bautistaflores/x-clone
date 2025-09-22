@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react"
+import { createContext, useState, useContext, useEffect, useCallback } from "react"
 import { getPostsRequest, getPostWithCommentsRequest, createPostRequest, getPostsByUsernameRequest, getPostByIdRequest } from "../api/posts"
 
 export const PostsContext = createContext()
@@ -10,6 +10,7 @@ export const usePosts = () => {
 }
 
 export const PostsProvider = ({ children }) => {
+    const [postsMap, setPostsMap] = useState({})
     const [posts, setPosts] = useState([])
     const [post, setPost] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -23,7 +24,11 @@ export const PostsProvider = ({ children }) => {
         }
     }
 
-    const getPosts = async () => {
+    const getPosts = useCallback(async () => {
+        if (posts.length > 0) {
+            return;
+        }
+
         try {
             setLoading(true)
             const res = await getPostsRequest()
@@ -33,7 +38,7 @@ export const PostsProvider = ({ children }) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [posts.length])
 
     const getPostsByUsername = async (username) => {
         try {
@@ -48,10 +53,18 @@ export const PostsProvider = ({ children }) => {
     }
 
     const getPostWithComments = async (postId) => {
+        if (postsMap[postId]) {
+            setPost(postsMap[postId])
+            return postsMap[postId];
+        }
+
         try {
             setLoading(true)
             const res = await getPostWithCommentsRequest(postId)
-            setPost(res.data)
+            const fetchedPost = res.data;
+            setPost(fetchedPost);
+            setPostsMap(prev => ({ ...prev, [postId]: fetchedPost }));
+            return fetchedPost;
         } catch (error) {
             console.log(error)
         } finally {

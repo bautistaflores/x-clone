@@ -14,7 +14,7 @@ function HomePage() {
 
     useEffect(() => {
         getPosts()
-    }, [])
+    }, [getPosts])
 
     const handlePostClick = (postId) => {
         navigate(`/post/status/${postId}`);
