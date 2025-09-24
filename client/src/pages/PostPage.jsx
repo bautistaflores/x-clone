@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 import { usePosts } from '../context/PostsContext'
 import PostCard from '../components/PostCard'
 import { useNavigate } from 'react-router-dom';
+import ComposeComment from '../components/ComposeComment'
+
 import BackIcon from "../components/Icons/BackIcon"
 import LoadingIcon from "../components/Icons/LoadingIcon"
 
@@ -32,7 +34,7 @@ function PostPage() {
 
     return (
         <div>
-            <div className='flex  border-x border-gray-500/50'>
+            <div className='flex border-x border-gray-500/50'>
                 <button onClick={() => navigate(-1)} className="cursor-pointer hover:bg-[#1e1e1e] rounded-full p-2 m-2">
                     <BackIcon />
                 </button>
@@ -40,12 +42,14 @@ function PostPage() {
                 <h1 className="text-xl font-bold ml-5 mt-3">Post</h1>
             </div>
 
-            <PostCard post={post} />
+            <PostCard post={post} postPage={true} />
+
+            {/* Formulario de comentario */}
+            <ComposeComment parentId={post.id} />
+            
             
             {/* Sección de comentarios */}
-            <div className="mt-8">
-                <h2 className="text-xl font-bold mb-4">Comentarios</h2>
-                
+            <div className="">
                 {post.comments && post.comments.length > 0 ? (
                     post.comments.map(comment => (
                         <div key={comment.id} 

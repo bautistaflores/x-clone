@@ -10,7 +10,7 @@ import CloseIcon from "./Icons/CloseIcon";
 
 const MAX_CHARACTERS = 280;
 
-function FormPost({isModal = false}) {
+function FormPost({isModal = false, isCommentPage = false, parentId: propParentId}) {
     // context
     const { createPost, getPostById, post } = usePosts()
     const { user, isAuthenticated } = useAuth()
@@ -37,7 +37,7 @@ function FormPost({isModal = false}) {
     useEffect(() => {
         if (isAuthenticated) {
             getProfile(user?.username)
-            if (parentId) {
+            if (parentId && !isCommentPage) {
                 getPostById(parentId)
             }
         }
@@ -61,7 +61,11 @@ function FormPost({isModal = false}) {
     // cerrar modal
     const handleCloseModal = () => {
         if (location.state && location.state.background) {
-            navigate(-1)
+            navigate(-1) 
+        } else if (isCommentPage) {
+            setContent('')
+            setSelectedImage(null)
+            setPreviewImage(null)
         } else {
             navigate('/home')
         }
@@ -73,7 +77,7 @@ function FormPost({isModal = false}) {
     }
 
     // postear
-    const parentId = location.state?.parentId || null;
+    const parentId = propParentId || location.state?.parentId || null;
     const handlePostSubmit = async () => {
         if (!isButtonDisabled) {
             const formData = new FormData();
@@ -114,7 +118,7 @@ function FormPost({isModal = false}) {
     return (
         <div className="p-3">
             {/* Si es comentario */}
-            {parentId && (
+            {parentId && !isCommentPage && (
                 <div>
                     <div className="flex gap-3 mt-2 ml-1 pb-2">
                         {/* imagen de perfil del usuario que posteo */}
