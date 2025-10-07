@@ -15,7 +15,7 @@ function PostPage() {
 
     useEffect(() => {
         getPostWithComments(postId)
-    }, [postId])
+    }, [postId, getPostWithComments])
 
     const handlePostClick = (postId) => {
         navigate(`/post/status/${postId}`);
@@ -31,7 +31,6 @@ function PostPage() {
         return <LoadingIcon />
     } 
 
-
     return (
         <div>
             <div className='flex border-x border-gray-500/50'>
@@ -45,7 +44,7 @@ function PostPage() {
             <PostCard post={post} postPage={true} />
 
             {/* Formulario de comentario */}
-            <ComposeComment parentId={post.id} />
+            <ComposeComment parentId={post.id} userIdPost={post.user_id} />
             
             
             {/* Sección de comentarios */}
@@ -60,7 +59,7 @@ function PostPage() {
                         </div>
                     ))
                 ) : (
-                    <p className="text-gray-500">No hay comentarios aún</p>
+                    <div className="h-[1000px] border-x border-gray-500/50"></div>
                 )}
             </div>
         </div>

@@ -22,6 +22,9 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
     const [selectedImage, setSelectedImage] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
 
+    const [expanded, setExpanded] = useState(false);
+    const [parentPost, setParentPost] = useState(null);
+
     // hooks
     const navigate = useNavigate()
     const location = useLocation()
@@ -34,14 +37,28 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
 
     const isButtonDisabled = (content.trim().length === 0 && !selectedImage) || content.length > MAX_CHARACTERS;
 
+    const parentId = propParentId || location.state?.parentId || null;
+
     useEffect(() => {
-        if (isAuthenticated) {
-            getProfile(user?.username)
+        const fetchParent = async () => {
+            if (!isAuthenticated) return;
+
+            await getProfile(user?.username)
+
             if (parentId && !isCommentPage) {
-                getPostById(parentId)
+                await getPostById(parentId)
+            }
+
+            if (parentId && parentId !== post?.id) {
+                const comment = await getPostById(parentId)
+                setParentPost(comment)
+            } else {
+                setParentPost(post)
             }
         }
-    }, [isAuthenticated, user?.username, getProfile])
+
+        fetchParent()
+    }, [isAuthenticated, user?.username, getProfile, parentId ])
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -77,7 +94,6 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
     }
 
     // postear
-    const parentId = propParentId || location.state?.parentId || null;
     const handlePostSubmit = async () => {
         if (!isButtonDisabled) {
             const formData = new FormData();
@@ -96,6 +112,7 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
             setContent('');
             setSelectedImage(null);
             setPreviewImage(null);
+            setExpanded(false);
             handleCloseModal();
         }
     }
@@ -112,13 +129,25 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
         }
     }
 
+    // expandir textarea
+    const handleFocus = () => {
+        setExpanded(true);
+    }
 
-    const postUser = getUser(post?.user_id);
+    // const postUser = getUser(post?.user_id);
+    const postUser = parentPost ? getUser(parentPost.user_id) : null;
     
     return (
         <div className="p-3">
+            {isCommentPage && postUser && expanded && (
+                <div className="flex items-center gap-1 mb-2 ml-14 hover:cursor-pointer">
+                    <p className="text-gray-500">Respondiendo a</p>
+                    <span className="text-blue-400">@{postUser.username}</span>
+                </div>
+            )}
+
             {/* Si es comentario */}
-            {parentId && !isCommentPage && (
+            {parentId && !isCommentPage && postUser && (
                 <div>
                     <div className="flex gap-3 mt-2 ml-1 pb-2">
                         {/* imagen de perfil del usuario que posteo */}
@@ -166,7 +195,7 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
 
                             <div className="pb-2">
                                 {/* contenido */}
-                                <p>{post?.content}</p>
+                                <p>{parentPost?.content}</p>
                             </div>
                         </div>
                     </div>
@@ -187,14 +216,28 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
                 </div>
 
                 {/* formulario */}
-                <div className="mt-1 w-full">
-                    <textarea 
-                        ref={textareaRef}
-                        className={`w-full bg-transparent text-xl focus:outline-none placeholder-gray-500 resize-none overflow-hidden ${isModal ? (previewImage ? 'pb' : 'pb-12') : 'pb'}`} 
-                        placeholder={parentId ? "Postea tu respuesta" : "¿Qué está pasando?"}
-                        value={content}
-                        onChange={handleContentChange}
-                    ></textarea>
+                <div className="mt-1 w-full ">
+                    <div className="flex flex-row">
+                        <textarea 
+                            ref={textareaRef}
+                            className={`w-full bg-transparent text-xl focus:outline-none placeholder-gray-500 resize-none overflow-hidden ${isModal ? (previewImage ? 'pb' : 'pb-12') : 'pb'}`} 
+                            placeholder={parentId ? "Postea tu respuesta" : "¿Qué está pasando?"}
+                            onFocus={handleFocus}
+                            value={content}
+                            onChange={handleContentChange}
+                        ></textarea>
+
+                        {isCommentPage && !expanded && (
+                            <div>
+                                <button 
+                                    className={`bg-white text-black font-bold py-2 px-6 rounded-full transition-colors duration-200 
+                                        ${isButtonDisabled ? 'opacity-50 cursor-pointer' : ''}`}
+                                >
+                                    Responder
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* imagen previsualizada */}
                     {previewImage && (
@@ -220,30 +263,32 @@ function FormPost({isModal = false, isCommentPage = false, parentId: propParentI
 
 
             {/* boton postear y subir imagen */}
-            <div className={`flex justify-between items-center ${isModal || previewImage ? 'border-t border-gray-500/50 pt-2' : ''}`}>
-                {/* boton subir imagen */}
-                <div>
-                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageChange}/>
-                    <div className={`cursor-pointer hover:bg-blue-900/20 rounded-full p-2`} onClick={handleIconClick}>
-                        <ImgIcon height={22} width={22}/>
+            {(!isCommentPage || expanded) && (
+                <div className={`flex justify-between items-center ${isModal || previewImage ? 'border-t border-gray-500/50 pt-2' : ''}`}>
+                    {/* boton subir imagen */}
+                    <div>
+                        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageChange}/>
+                        <div className={`cursor-pointer hover:bg-blue-900/20 rounded-full p-2`} onClick={handleIconClick}>
+                            <ImgIcon height={22} width={22}/>
+                        </div>
+                    </div>
+
+                    {/* boton postear */}
+                    <div>    
+                        <span className={`text-sm mr-4 ${remainingCharacters < 15 ? 'text-red-500' : 'text-gray-500'}`}>
+                            {remainingCharacters}
+                        </span>
+                        <button 
+                            className={`bg-white text-black font-bold py-2 px-6 rounded-full transition-colors duration-200 
+                                ${isButtonDisabled ? 'opacity-50 cursor-pointer' : 'hover:bg-gray-200 cursor-pointer'}`}
+                            disabled={isButtonDisabled}
+                            onClick={handlePostSubmit}
+                        >
+                            {parentId ? 'Responder' : 'Postear'}
+                        </button>
                     </div>
                 </div>
-
-                {/* boton postear */}
-                <div>    
-                    <span className={`text-sm mr-4 ${remainingCharacters < 15 ? 'text-red-500' : 'text-gray-500'}`}>
-                        {remainingCharacters}
-                    </span>
-                    <button 
-                        className={`bg-white text-black font-bold py-2 px-6 rounded-full transition-colors duration-200 
-                            ${isButtonDisabled ? 'opacity-50' : 'hover:bg-gray-200 cursor-pointer'}`}
-                        disabled={isButtonDisabled}
-                        onClick={handlePostSubmit}
-                    >
-                        Postear
-                    </button>
-                </div>
-            </div>
+            )}
         </div>
     )
 }
