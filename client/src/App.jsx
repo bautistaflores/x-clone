@@ -4,6 +4,7 @@ import { PostsProvider } from "./context/PostsContext"
 import { UsersProvider } from "./context/UsersContext"
 import { ProfileProvider } from "./context/ProfilesContext"
 
+import AuthPage from "./pages/AuthPage"
 import RegisterPage from "./pages/RegisterPage"
 import LoginPage from "./pages/LoginPage"
 
@@ -25,8 +26,15 @@ function App() {
   if (location.pathname === '/compose/post' && !background) {
     backgroundLocation = { pathname: '/home' };
   }
+  if ((location.pathname === '/login' || location.pathname === '/register') && !background) {
+    backgroundLocation = { pathname: '/' };
+  }
 
-  const showModal = background || location.pathname === '/compose/post';
+  const showModal = 
+    background || 
+    location.pathname === '/compose/post' ||
+    location.pathname === '/register' ||
+    location.pathname === '/login';
 
   return (
     <AuthProvider>
@@ -34,8 +42,9 @@ function App() {
         <ProfileProvider>
           <PostsProvider>
             <Routes location={backgroundLocation || location}>
+              <Route path="/" element={<AuthPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
               
               <Route element={<ProtectedRoute />}>
                   <Route path="/home" element={<HomePage />} />
@@ -46,9 +55,12 @@ function App() {
               </Route>
             </Routes>
             
+            {/* modales */}
             {showModal && (
               <Routes>
                 <Route path="/compose/post" element={<ComposePost />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/login" element={<LoginPage />} />
               </Routes>
             )}
           </PostsProvider>

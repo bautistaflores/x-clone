@@ -90,11 +90,11 @@ export const login = async (req, res) => {
                 ]
               }
         })
-        if (!user) return res.status(400).json(['User not found']);
+        if (!user) return res.status(400).json(['Usuario no encontrado']);
 
         // Verificacion de contraseña
         const isPasswordValid = await bcryptjs.compare(password, user.password);
-        if(!isPasswordValid) return res.status(400).json(['Invalid password']);
+        if(!isPasswordValid) return res.status(400).json(['Contraseña incorrecta']);
 
         // Generar token
         const token = generateToken(user.id);

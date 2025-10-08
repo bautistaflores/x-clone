@@ -23,7 +23,7 @@ function ComposePost() {
                 {/* boton cerrar */}
                 <div>
                     <input type="file" accept="image/*" className="hidden" />
-                    <button onClick={handleCloseModal} className="cursor-pointer hover:bg-gray-900 rounded-full p-2 m-2">
+                    <button onClick={handleCloseModal} className="cursor-pointer hover:bg-[#1e1e1e] rounded-full p-2 m-2">
                         <CloseIcon />
                     </button>
                 </div>
