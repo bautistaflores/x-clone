@@ -158,3 +158,33 @@ export const uploadProfilePicture = async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar la foto de perfil' });
     }
 };
+
+export const searchProfiles = async (req, res) => {
+    try {
+        const { query } = req.query;
+
+        const profiles = await prisma.user.findMany({
+            where: { 
+                OR: 
+                [
+                    { username: { contains: query, mode: 'insensitive' } }, 
+                    { profile: { full_name: { contains: query, mode: 'insensitive' } } }
+                ]},
+            select: {
+                username: true,
+                profile: {
+                    select: {
+                        full_name: true,
+                        profile_picture: true
+                    }
+                }
+            },
+            take: 10
+        });
+
+        res.json(profiles);
+    } catch (error) {
+        console.error('Error searching users:', error);
+        res.status(500).json({ error: 'Error searching users' });
+    }
+}

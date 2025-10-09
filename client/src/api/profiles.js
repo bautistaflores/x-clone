@@ -17,3 +17,6 @@ export const uploadProfilePictureRequest = (file) => {
         }
     });
 };
+
+// Buscar perfiles
+export const searchProfilesRequest = (query) => api.get(`/profiles/p/search?query=${query}`);

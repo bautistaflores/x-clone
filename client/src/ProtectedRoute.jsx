@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "./context/AuthContext"
 import Header from "./components/Header"
 import LogoIcon from "./components/Icons/LogoIcon"
+import SearchProfiles from "./components/SearchProfiles"
 
 function ProtectedRoute() {
     const { loading, isAuthenticated } = useAuth()
@@ -16,10 +17,18 @@ function ProtectedRoute() {
     if (!loading && !isAuthenticated) return <Navigate to="/" replace />
 
     return (
-        <div className="min-h-screen">
-            <Header />
-            <div className="absolute left-[31.23%] top-0 right-0 w-[600px]">
+        <div className="min-h-screen flex">
+            <div className="w-[31.23%]">
+                <Header />
+            </div>
+            <div className="flex-1 max-w-[600px]">
                 <Outlet />
+            </div>
+
+            <div className="w-[20%]">
+                <div className="sticky top-0 pl-8 py-2">
+                    <SearchProfiles />
+                </div>
             </div>
         </div>
     )
