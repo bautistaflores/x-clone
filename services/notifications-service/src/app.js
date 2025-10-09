@@ -43,12 +43,12 @@ io.on('connection', (socket) => {
                 take: 50
             });
             
-            if (previousNotifications.length > 0) {
-                console.log(`Enviando ${previousNotifications.length} notificaciones previas al usuario ${userIdStr}`);
-                socket.emit('notifications', previousNotifications);
-            }
+            console.log(`Enviando ${previousNotifications.length} notificaciones previas al usuario ${userIdStr}`);
+            socket.emit('notifications', previousNotifications);
         } catch (error) {
             console.error('Error al cargar notificaciones previas:', error);
+            // envia array vacío si hay error
+            socket.emit('notifications', []);
         }
     });
 

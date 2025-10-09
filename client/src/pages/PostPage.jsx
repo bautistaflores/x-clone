@@ -41,14 +41,15 @@ function PostPage() {
                 <h1 className="text-xl font-bold ml-5 mt-3">Post</h1>
             </div>
 
-            <PostCard post={post} postPage={true} />
+            <div className="border-x border-gray-500/50">
+                <PostCard post={post} postPage={true}/>
+            </div>
 
             {/* Formulario de comentario */}
             <ComposeComment parentId={post.id} userIdPost={post.user_id} />
             
-            
             {/* Sección de comentarios */}
-            <div className="">
+            <div className="border-x border-gray-500/50">
                 {post.comments && post.comments.length > 0 ? (
                     post.comments.map(comment => (
                         <div key={comment.id} 
@@ -59,7 +60,7 @@ function PostPage() {
                         </div>
                     ))
                 ) : (
-                    <div className="h-[1000px] border-x border-gray-500/50"></div>
+                    <div className="h-[1000px]"></div>
                 )}
             </div>
         </div>

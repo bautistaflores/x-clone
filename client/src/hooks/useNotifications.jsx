@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 const useNotifications = (userId) => {
     const [notifications, setNotifications] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
     const socketRef = useRef(null);
     const userIdRef = useRef(userId);
 
@@ -55,6 +56,7 @@ const useNotifications = (userId) => {
         // Manejar notificaciones previas
         newSocket.on('notifications', (previousNotifications) => {
             setNotifications(previousNotifications);
+            setIsLoaded(true);
         });
 
         // Manejar nuevas notificaciones
@@ -93,7 +95,7 @@ const useNotifications = (userId) => {
         };
     }, [userId]);
 
-    return { notifications, isConnected };
+    return { notifications, isConnected, isLoaded };
 };
 
 export default useNotifications;

@@ -23,7 +23,7 @@ function HomePage() {
     return (
         <div className="w-[600px]">
             <ComposePostHome />
-            <div>
+            <div className="min-h-[1000px] border-x border-gray-500/50">
                 {postsLoading ? (
                     <div className="h-[1000px] border-x border-gray-500/50">
                         <LoadingIcon />

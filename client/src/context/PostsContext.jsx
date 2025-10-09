@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, useCallback } from "react"
 import { getPostsRequest, getPostWithCommentsRequest, createPostRequest, getPostsByUsernameRequest, getPostByIdRequest } from "../api/posts"
+import { useUsers } from "./UsersContext"
 
 export const PostsContext = createContext()
 
@@ -13,7 +14,9 @@ export const PostsProvider = ({ children }) => {
     const [postsMap, setPostsMap] = useState({})
     const [posts, setPosts] = useState([])
     const [post, setPost] = useState(null)
+    const [userPosts, setUserPosts] = useState([])
     const [loading, setLoading] = useState(false)
+    const { fetchUsers } = useUsers();
 
     const createPost = async (formData) => {
         try {
@@ -32,7 +35,15 @@ export const PostsProvider = ({ children }) => {
         try {
             setLoading(true)
             const res = await getPostsRequest()
-            setPosts(res.data)
+            const postsData = res.data;
+
+            // trae los ids de los usuarios de los posts
+            const userIds = [...new Set(postsData.map(p => p.user_id))];
+
+            // trae info de todos los usuarios antes de renderizar
+            await fetchUsers(userIds);
+
+            setPosts(postsData)
         } catch (error) {
             console.log(error)
         } finally {
@@ -44,7 +55,15 @@ export const PostsProvider = ({ children }) => {
         try {
             setLoading(true)
             const res = await getPostsByUsernameRequest(username)
-            setPosts(res.data)
+            const postsData = res.data;
+
+            // trae los ids de los usuarios de los posts
+            const userIds = [...new Set(postsData.map(p => p.user_id))];
+
+            // trae info de todos los usuarios antes de renderizar
+            await fetchUsers(userIds);
+
+            setUserPosts(postsData)
         } catch (error) {
             console.log(error)
         } finally {
@@ -125,6 +144,7 @@ export const PostsProvider = ({ children }) => {
     return (
         <PostsContext.Provider value={{
             posts,
+            userPosts,
             createPost,
             getPosts,
             getPostsByUsername,

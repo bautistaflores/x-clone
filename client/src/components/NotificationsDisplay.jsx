@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const NotificationDisplay = memo(() => {
     const { user } = useAuth();
     const { getPostById } = usePosts();
-    const { notifications } = useNotifications(user?.id);
+    const { notifications, isLoaded } = useNotifications(user?.id);
     const [userProfiles, setUserProfiles] = useState({});
     const [postDetails, setPostDetails] = useState({});
     const [loading, setLoading] = useState(true);
@@ -49,6 +49,11 @@ const NotificationDisplay = memo(() => {
 
     // Obtener el perfil de los usuarios y post de cada notificacion
     useEffect(() => {
+        // si las notificaciones todavia no se cargaron desde el socket, no hacer nada
+        if (!isLoaded) {
+            return;
+        }
+
         const fetchData = async () => {
             setLoading(true);
             await Promise.all(
@@ -59,12 +64,13 @@ const NotificationDisplay = memo(() => {
             );
             setLoading(false);
         };
+        
         if (notifications.length > 0) {
             fetchData();
         } else {
             setLoading(false);
         }
-    }, [notifications]);
+    }, [notifications, isLoaded]);
 
     const handleProfileClick = (event, username) => {
         event.stopPropagation();
@@ -90,7 +96,7 @@ const NotificationDisplay = memo(() => {
                     <LoadingIcon />
                 ) : (
                     filteredNotifications.length === 0 ? (
-                        <p className="border-b border-gray-500/50">No tienes notificaciones.</p>
+                        <p className="mt-10 text-center font-bold text-gray-500">Sin notificaciones.</p>
                     ) : (
                         <div>
                             {filteredNotifications.map((notification, index) => {

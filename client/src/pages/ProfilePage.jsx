@@ -9,28 +9,17 @@ import LoadingIcon from "../components/Icons/LoadingIcon"
 function ProfilePage() {
     const { profile, getProfile, loading: profileLoading, error } = useProfiles()
     const { username } = useParams()
-    const { posts, getPostsByUsername, loading: postsLoading } = usePosts()
+    const { userPosts, getPostsByUsername, loading: postsLoading } = usePosts()
     const navigate = useNavigate()
 
     useEffect(() => {
         getProfile(username)
-    }, [username, getProfile])
-
-    useEffect(() => {
         getPostsByUsername(username)
-    }, [username])
+    }, [username, getProfile])
 
     const handlePostClick = (postId) => {
         navigate(`/post/status/${postId}`);
     };
-
-    // if (loading) {
-    //     return (
-    //         <div>
-    //             <p>Cargando perfil...</p>
-    //         </div>
-    //     )
-    // }
 
     if (error) {
         return (
@@ -96,14 +85,14 @@ function ProfilePage() {
             </div>
 
             {/* posts del perfil */}
-            <div>
+            <div className="min-h-[1000px] border-x border-gray-500/50">
                 {postsLoading ? (
                     <div className="h-[1000px] border-x border-gray-500/50">
                         <LoadingIcon />
                     </div>
                 ) : (
-                    posts.length > 0 ? (
-                        posts.map(post => (
+                    userPosts.length > 0 ? (
+                        userPosts.map(post => (
                             <div
                                 key={post.type === 'retweet' ? post.retweetedId : post.id}
                                 onClick={() => handlePostClick(post.id)}
