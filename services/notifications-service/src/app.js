@@ -68,86 +68,89 @@ io.on('connection', (socket) => {
 async function subscribeToNotifications() {
     const subscriber = redisClient.duplicate();
     await subscriber.connect();
+
     await subscriber.subscribe('notifications', async (message) => {
         try {
             console.log('Notificación recibida de Redis:', message);
             const notification = JSON.parse(message);
             
-            if (notification.type === 'UNLIKE') {
-                console.log('Procesando unlike:', notification);
-                // Si es un unlike, elimina la notificación de like existente
-                const deletedNotification = await prisma.notification.deleteMany({
-                    where: {
-                        type: 'LIKE',
-                        fromUserId: String(notification.fromUserId),
-                        toUserId: String(notification.toUserId),
-                        postId: notification.postId
-                    }
-                });
-                console.log('Notificación de like eliminada:', deletedNotification);
+            // datos de la notificación
+            const { type, fromUserId, toUserId, postId, commentId } = notification;
+            const payload = {
+                fromUserId: String(fromUserId),
+                toUserId: String(toUserId),
+                postId: postId
+            };
 
+            // switch para cada tipo de notificación
+            switch (type) {
+                case 'LIKE':
+                case 'RETWEET': {
+                    // crea la notificación 
+                    console.log(`Procesando ${type}:`, notification);
+                    const savedNotification = await prisma.notification.create({
+                        data: { type, ...payload }
+                    });
+
+                    console.log('Notificación guardada en BD:', savedNotification);
+                    
+                    // envía la notificación al socket del usuario
+                    const userSocket = userSockets.get(String(toUserId));
+                    if (userSocket) {
+                        console.log(`Enviando notificación al socket del usuario ${toUserId}`);
+                        userSocket.emit('notification', savedNotification);
+                    } else {
+                        console.log(`Usuario ${toUserId} no conectado.`);
+                    }
+                    break;
+                }
+
+                case 'COMMENT': {
+                    // crea la notificación 
+                    console.log(`Procesando ${type}:`, notification);
+                    const savedNotification = await prisma.notification.create({
+                        data: {
+                            type,
+                            fromUserId: String(fromUserId),
+                            toUserId: String(toUserId),
+                            postId,
+                            commentId // id del comentario
+                        }
+                    });
+
+                    console.log('Notificación de comentario guardada:', savedNotification);
+        
+                    // La lógica del socket es la misma
+                    const userSocket = userSockets.get(String(toUserId));
+                    if (userSocket) {
+                        console.log(`Enviando notificación al socket del usuario ${toUserId}`);
+                        userSocket.emit('notification', savedNotification);
+                    } else {
+                        console.log(`Usuario ${toUserId} no conectado.`);
+                    }
+                    break; 
+                }
+
+                case 'UNLIKE':
+                case 'UNRETWEET':
+                case 'UNCOMMENT': {
+                    // elimina la notificación
+                    console.log(`Procesando ${type}:`, notification);
+                    // deriva el tipo a eliminar
+                    const typeToDelete = type.substring(2); 
+                    
+                    const { count } = await prisma.notification.deleteMany({
+                        where: { type: typeToDelete, ...payload }
+                    });
+                    
+                    console.log(`${count} notificación(es) de ${typeToDelete} eliminada(s).`);
+                    break;
+                }
                 
-            } else if (notification.type === 'LIKE') {
-                console.log('Procesando like:', notification);
-                // Si es un like, crea la notificación
-                const savedNotification = await prisma.notification.create({
-                    data: {
-                        type: notification.type,
-                        fromUserId: String(notification.fromUserId),
-                        toUserId: String(notification.toUserId),
-                        postId: notification.postId
-                    }
-                });
-
-                console.log('Notificación guardada en BD:', savedNotification);
-
-                // Envia la notificación al usuario si está conectado
-                const userSocket = userSockets.get(String(notification.toUserId));
-                if (userSocket) {
-                    console.log(`Enviando notificación al socket del usuario ${notification.toUserId}`);
-                    userSocket.emit('notification', savedNotification);
-                } else {
-                    console.log(`Usuario ${notification.toUserId} no está conectado, notificación guardada para más tarde`);
-                }
-
-
-            } else if (notification.type === 'UNRETWEET') {
-                console.log('Procesando unretweet:', notification);
-                // Si es un unretweet, elimina la notificación de retweet existente
-                const deletedNotification = await prisma.notification.deleteMany({
-                    where: {
-                        type: 'RETWEET',
-                        fromUserId: String(notification.fromUserId),
-                        toUserId: String(notification.toUserId),
-                        postId: notification.postId
-                    }
-                });
-                console.log('Notificación de retweet eliminada:', deletedNotification);
-
-
-            } else if (notification.type === 'RETWEET') {
-                console.log('Procesando retweet:', notification);
-                // Si es un retweet, crea la notificación
-                const savedNotification = await prisma.notification.create({
-                    data: {
-                        type: notification.type,
-                        fromUserId: String(notification.fromUserId),
-                        toUserId: String(notification.toUserId),
-                        postId: notification.postId
-                    }
-                });
-
-                console.log('Notificación guardada en BD:', savedNotification);
-
-                // Envia la notificación al usuario si está conectado
-                const userSocket = userSockets.get(String(notification.toUserId));
-                if (userSocket) {
-                    console.log(`Enviando notificación al socket del usuario ${notification.toUserId}`);
-                    userSocket.emit('notification', savedNotification);
-                } else {
-                    console.log(`Usuario ${notification.toUserId} no está conectado, notificación guardada para más tarde`);
-                }
+                default:
+                    console.warn(`Tipo de notificación desconocido: ${type}`);
             }
+
         } catch (error) {
             console.error('Error al procesar notificación:', error);
         }

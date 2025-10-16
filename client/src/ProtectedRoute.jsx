@@ -17,7 +17,7 @@ function ProtectedRoute() {
     if (!loading && !isAuthenticated) return <Navigate to="/" replace />
 
     return (
-        <div className="min-h-screen flex">
+        <div className="h-screen flex">
             <div className="w-[31.23%]">
                 <Header />
             </div>

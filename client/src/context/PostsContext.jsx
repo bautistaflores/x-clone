@@ -81,6 +81,23 @@ export const PostsProvider = ({ children }) => {
             setLoading(true)
             const res = await getPostWithCommentsRequest(postId)
             const fetchedPost = res.data;
+            
+            if (!fetchedPost) {
+                throw new Error('Post not found')
+            }
+
+            // Obtener los ids de autor y comentarios
+            const userIds = [
+                fetchedPost.user_id,
+                ...(fetchedPost.comments?.map(comment => comment.user_id) ?? [])
+            ];
+
+            // unicca lista para no llamadas duplicadas
+            const uniqueUserIds = [...new Set(userIds)];
+
+            // trae info de todos los usuarios antes de renderizar
+            await fetchUsers(uniqueUserIds);
+
             setPost(fetchedPost);
             setPostsMap(prev => ({ ...prev, [postId]: fetchedPost }));
             return fetchedPost;
@@ -91,15 +108,14 @@ export const PostsProvider = ({ children }) => {
         }
     }
 
-    const getPostById = async (postId) => {
+    const getPostById = useCallback(async (postId) => {
         try {
             const res = await getPostByIdRequest(postId)
-            setPost(res.data)
             return res.data
         } catch (error) {
             console.log(error)
         }
-    }
+    }, [])
 
     const updatePostLike = (postId, isLiked, likesCount) => {
         // Actualizar el post individual si existe
@@ -111,7 +127,7 @@ export const PostsProvider = ({ children }) => {
             }))
         }
         
-        // Actualizar el post en la lista de posts
+        // actualiza el post en la lista de posts
         setPosts(prevPosts => 
             prevPosts.map(p => 
                 p.id === postId 
@@ -119,10 +135,22 @@ export const PostsProvider = ({ children }) => {
                     : p
             )
         )
+
+        // actualiza el post en la lista de usuario
+        setUserPosts(prevUserPosts => prevUserPosts.map(p => p.id === postId ? { ...p, isLiked, likesCount } : p));
+
+        // actualiza el post en el mapa de cache
+        setPostsMap(prevMap => {
+            if (!prevMap[postId]) return prevMap;
+            return {
+                ...prevMap,
+                [postId]: { ...prevMap[postId], isLiked, likesCount }
+            };
+        });
     }
 
     const updateRetweet = (postId, isRetweeted, retweetsCount) => {
-        // Actualizar el post individual si existe
+        // actualiza el post individual si existe
         if (post && post.id === postId) {
             setPost(prevPost => ({
                 ...prevPost,
@@ -131,7 +159,7 @@ export const PostsProvider = ({ children }) => {
             }))
         }
         
-        // Actualizar el post en la lista de posts
+        // actualiza el post en la lista de posts
         setPosts(prevPosts => 
             prevPosts.map(p => 
                 p.id === postId 
@@ -139,6 +167,18 @@ export const PostsProvider = ({ children }) => {
                     : p
             )
         )
+
+        // actualiza el post en la lista de usuario
+        setUserPosts(prevUserPosts => prevUserPosts.map(p => p.id === postId ? { ...p, isRetweeted, retweetsCount } : p));
+
+        // actualiza el post en el mapa de cache
+        setPostsMap(prevMap => {
+            if (!prevMap[postId]) return prevMap;
+            return {
+                ...prevMap,
+                [postId]: { ...prevMap[postId], isRetweeted, retweetsCount }
+            };
+        });
     }
 
     return (

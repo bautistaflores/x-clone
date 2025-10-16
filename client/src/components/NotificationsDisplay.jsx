@@ -5,6 +5,7 @@ import { usePosts } from '../context/PostsContext';
 import { getProfileRequestById } from '../api/profiles';
 import LikeIcon from './Icons/LikeIcon';
 import RetweetIcon from './Icons/RetweetIcon';
+import CommentIcon from './Icons/CommentIcon';
 import LoadingIcon from './Icons/LoadingIcon';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +15,7 @@ const NotificationDisplay = memo(() => {
     const { notifications, isLoaded } = useNotifications(user?.id);
     const [userProfiles, setUserProfiles] = useState({});
     const [postDetails, setPostDetails] = useState({});
+    const [commentDetails, setCommentDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     
@@ -47,6 +49,18 @@ const NotificationDisplay = memo(() => {
         }
     };
 
+    const fetchCommentDetails = async (commentId) => {
+        try {
+            const comment = await getPostById(commentId);
+            setCommentDetails(prev => ({
+                ...prev,
+                [commentId]: comment
+            }));
+        } catch (error) {
+            console.error(`Error al obtener el comentario con ID ${commentId}:`, error);
+        }
+    };
+
     // Obtener el perfil de los usuarios y post de cada notificacion
     useEffect(() => {
         // si las notificaciones todavia no se cargaron desde el socket, no hacer nada
@@ -60,6 +74,9 @@ const NotificationDisplay = memo(() => {
                 notifications.map(async (notification) => {
                     await fetchUserProfile(notification.fromUserId);
                     await fetchPostDetails(notification.postId);
+                    if (notification.commentId) {
+                        await fetchCommentDetails(notification.commentId);
+                    }
                 })
             );
             setLoading(false);
@@ -80,6 +97,11 @@ const NotificationDisplay = memo(() => {
     const handlePostClick = (event, postId) => {
         event.stopPropagation();
         navigate(`/post/status/${postId}`);
+    };
+
+    const handleCommentClick = (event, commentId) => {
+        event.stopPropagation();
+        navigate(`/post/status/${commentId}?comment=true`);
     };
 
     // Filtrar las notificaciones para que no se muestren las notificaciones del usuario logueado
@@ -133,10 +155,17 @@ const NotificationDisplay = memo(() => {
                                             <span> retweeteó tu post</span>
                                         </span>
                                     );
+                                } else if (notification.type === 'COMMENT' && String(user.id) !== notification.fromUserId ) {
+                                    notificationIcon = <CommentIcon height={29} width={29} color="#42A5F5" />;
+                                    notificationText = (
+                                        <span>
+                                            <span className="font-bold hover:underline" onClick={(e) => handleProfileClick(e, userUsername)}>{userFullName}</span> <span> comentó tu post</span>
+                                        </span>
+                                    );
                                 }
 
                                 return (
-                                    <div key={index} onClick={(e) => handlePostClick(e, notification.postId)} className="flex border-b border-gray-600 py-3 px-4 hover:cursor-pointer">
+                                    <div key={index} onClick={(e) => {notification.type === 'COMMENT' ? handleCommentClick(e, notification.commentId) : handlePostClick(e, notification.postId)}} className="flex border-b border-gray-600 py-3 px-4 hover:cursor-pointer">
                                         {/* Icono de la notificacion */}
                                         <div className="mr-2">
                                             {notificationIcon}
@@ -163,8 +192,14 @@ const NotificationDisplay = memo(() => {
                                                 <p className="text-gray-400 text-sm">. . .</p>
                                             ) : (
                                                 <div>
-                                                    {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}
-                                                    {post.media_url && <img src={post.media_url} alt="Post" className='rounded-lg mb-3'/>}
+                                                    { post.content && notification.type === 'COMMENT' ? (
+                                                        <p className='text-gray-500/90 mb-1.5'>{commentDetails[notification.commentId].content}</p>
+                                                    ) : (
+                                                        <>
+                                                            {post.content && <p className='text-gray-500/90 mb-1.5'>{post.content}</p>}
+                                                            {post.media_url && <img src={post.media_url} alt="Post" className='rounded-lg mb-3'/>}
+                                                        </>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

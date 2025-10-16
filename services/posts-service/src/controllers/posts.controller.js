@@ -316,17 +316,32 @@ export const getPosts = async (req, res) => {
 
 export const getPostById = async (req, res) => {
     const { postId } = req.params;
+    const userId = String(req.user?.userId);
 
     try {
         const post = await prisma.post.findUnique({
-            where: { id: postId }
+            where: { id: postId },
+            include: {
+                comments: true,
+                likes: true,
+                retweeters: true
+            }
         });
+
+        // Procesar el post principal
+        const processedPost = {
+            ...post,
+            likesCount: post.likes.length,
+            isLiked: post.likes.some(like => String(like.user_id) === userId),
+            retweetsCount: post.retweeters.length,
+            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId)
+        };
 
         if (!post) {
             return res.status(404).json({ error: 'Post no encontrado' });
         }
 
-        res.json(post);
+        res.json(processedPost);
     } catch (error) {
         console.error('Error al obtener el post:', error);
         res.status(500).json({ error: 'Error al obtener el post' });

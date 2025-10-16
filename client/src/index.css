@@ -5,3 +5,7 @@
     @apply min-h-screen bg-black text-white;
   }
 }
+
+html {
+  overflow-y: scroll;
+}

@@ -32,8 +32,8 @@ function PostPage() {
     } 
 
     return (
-        <div>
-            <div className='flex border-x border-gray-500/50'>
+        <div className='min-h-full border-x border-gray-500/50'>
+            <div className='flex'>
                 <button onClick={() => navigate(-1)} className="cursor-pointer hover:bg-[#1e1e1e] rounded-full p-2 m-2">
                     <BackIcon />
                 </button>
@@ -41,7 +41,7 @@ function PostPage() {
                 <h1 className="text-xl font-bold ml-5 mt-3">Post</h1>
             </div>
 
-            <div className="border-x border-gray-500/50">
+            <div className="">
                 <PostCard post={post} postPage={true}/>
             </div>
 
@@ -49,7 +49,7 @@ function PostPage() {
             <ComposeComment parentId={post.id} userIdPost={post.user_id} />
             
             {/* Sección de comentarios */}
-            <div className="border-x border-gray-500/50">
+            <div className="">
                 {post.comments && post.comments.length > 0 ? (
                     post.comments.map(comment => (
                         <div key={comment.id} 
@@ -60,7 +60,7 @@ function PostPage() {
                         </div>
                     ))
                 ) : (
-                    <div className="h-[1000px]"></div>
+                    <div className="h-full"></div>
                 )}
             </div>
         </div>

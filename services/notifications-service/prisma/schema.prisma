@@ -18,8 +18,8 @@ model Notification {
   type        String   // 'like', 'comment', 'rt', 'follow'.
   fromUserId  String
   toUserId    String
-  postId      String?     // opcional: post relacionado
-  commentId   Int?     // opcional: comentario relacionado
+  postId      String?     // post relacionado
+  commentId   String?     // comentario relacionado
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
