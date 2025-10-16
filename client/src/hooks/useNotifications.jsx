@@ -1,17 +1,36 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
+import { markNotificationsAsReadRequest } from '../api/notifications';
 
 const useNotifications = (userId) => {
     const [notifications, setNotifications] = useState([]);
+    const [hasUnread, setHasUnread] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const socketRef = useRef(null);
     const userIdRef = useRef(userId);
 
     useEffect(() => {
-        // Si el userId cambió, desconectamos el socket anterior
+        const unreadExists = notifications.some(notification => !notification.read);
+        setHasUnread(unreadExists);
+    }, [notifications]);
+
+    const markAllAsRead = useCallback(async () => {
+        if (!hasUnread) return;
+
+        // que se muestren como leidas en la UI
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+        // marcar las notificaciones como leidas en la base de datos
+        try {
+            await markNotificationsAsReadRequest();
+        } catch (error) {
+            console.error("Error al marcar notificaciones como leídas en el backend:", error);
+        }
+    }, [hasUnread]);
+
+    useEffect(() => {
         if (userIdRef.current !== userId) {
-            console.log('UserId cambió, reconectando socket...');
             if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
@@ -20,12 +39,11 @@ const useNotifications = (userId) => {
         }
 
         if (!userId) {
-            console.log('No hay userId, no se inicializa el socket');
             setIsConnected(false);
             return;
         }
 
-        // Si ya existe un socket y está conectado, no hacemos nada
+        // si ya existe un socket y está conectado, no hacemos nada
         if (socketRef.current?.connected) {
             console.log('Socket ya está conectado');
             return;
@@ -53,37 +71,36 @@ const useNotifications = (userId) => {
             setIsConnected(false);
         });
 
-        // Manejar notificaciones previas
+        // manejar notificaciones previas
         newSocket.on('notifications', (previousNotifications) => {
             setNotifications(previousNotifications);
             setIsLoaded(true);
         });
 
-        // Manejar nuevas notificaciones
+        // manejar nuevas notificaciones
         newSocket.on('notification', (newNotification) => {
             setNotifications(prev => {
                 const safePrev = Array.isArray(prev) ? prev : [];
-        
-                const exists = safePrev.some(
-                    n => n.type === newNotification.type 
-                      && n.postId === newNotification.postId 
-                      && n.fromUserId === newNotification.fromUserId
+
+                const isDuplicate = safePrev.some(
+                    n => n.type === newNotification.type &&
+                         n.fromUserId === newNotification.fromUserId &&
+                         n.postId === newNotification.postId
                 );
-        
-                console.log("Nueva notificación recibida:", newNotification);
-        
-                if (exists) return safePrev;
-        
-                // Si estoy en /notificaciones, la marco como leída automáticamente
-                const isRead = window.location.pathname === "/notificaciones";
-        
-                return [{ ...newNotification, read: isRead }, ...safePrev];
+    
+                // si ya existe una notificación igual, no hacemos nada
+                if (isDuplicate) {
+                    console.log("Notificación duplicada ignorada:", newNotification);
+                    return safePrev;
+                }
+    
+                // si no es un duplicado, la añadimos al principio
+                return [newNotification, ...safePrev];
             });
         });
         
 
         newSocket.on('disconnect', (reason) => {
-            console.log('Socket desconectado. Razón:', reason);
             setIsConnected(false);
         });
 
@@ -95,7 +112,7 @@ const useNotifications = (userId) => {
         };
     }, [userId]);
 
-    return { notifications, isConnected, isLoaded };
+    return { notifications, isConnected, isLoaded, hasUnread, markAllAsRead };
 };
 
 export default useNotifications;

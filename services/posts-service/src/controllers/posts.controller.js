@@ -251,6 +251,11 @@ export const getPosts = async (req, res) => {
         const posts = await prisma.post.findMany({
             where: postConIdUsuario,
             include: {
+                _count: {
+                    select: {
+                        comments: true
+                    }
+                },
                 comments: true,
                 likes: true,
                 retweeters: true
@@ -284,6 +289,7 @@ export const getPosts = async (req, res) => {
             isLiked: post.likes.some(like => String(like.user_id) === userId),
             retweetsCount: post.retweeters.length,
             isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId),
+            commentsCount: post._count.comments,
             type: 'post'
         }));
 
@@ -294,6 +300,7 @@ export const getPosts = async (req, res) => {
             isLiked: retweet.originalPost.likes.some(like => String(like.user_id) === userId),
             retweetsCount: retweet.originalPost.retweeters.length,
             isRetweeted: retweet.originalPost.retweeters.some(r => String(r.user_id) === userId),
+            commentsCount: retweet.originalPost.comments.length,
             type: 'retweet',
             retweetedBy: retweet.user_id,
             retweetedAt: retweet.retweeted_at,
@@ -324,7 +331,12 @@ export const getPostById = async (req, res) => {
             include: {
                 comments: true,
                 likes: true,
-                retweeters: true
+                retweeters: true,
+                _count: {
+                    select: {
+                        comments: true
+                    }
+                }
             }
         });
 
@@ -334,7 +346,8 @@ export const getPostById = async (req, res) => {
             likesCount: post.likes.length,
             isLiked: post.likes.some(like => String(like.user_id) === userId),
             retweetsCount: post.retweeters.length,
-            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId)
+            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId),
+            commentsCount: post._count.comments
         };
 
         if (!post) {
@@ -358,7 +371,12 @@ export const getPostWithComments = async (req, res) => {
             include: {
                 comments: true,
                 likes: true,
-                retweeters: true
+                retweeters: true,
+                _count: {
+                    select: {
+                        comments: true
+                    }
+                }
             }
         });
         
@@ -382,7 +400,8 @@ export const getPostWithComments = async (req, res) => {
             likesCount: post.likes.length,
             isLiked: post.likes.some(like => String(like.user_id) === userId),
             retweetsCount: post.retweeters.length,
-            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId)
+            isRetweeted: post.retweeters.some(retweet => String(retweet.user_id) === userId),
+            commentsCount: post._count.comments
         };
 
         // Procesar los comentarios

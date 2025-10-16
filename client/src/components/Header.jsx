@@ -1,5 +1,4 @@
 import { useAuth } from "../context/AuthContext";
-import { useProfiles } from "../context/ProfilesContext";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
@@ -9,13 +8,16 @@ import NotificationIcon from "../components/Icons/NotificationIcon";
 import PerfilIcon from "../components/Icons/PerfilIcon";
 import ConfigurationIcon from "../components/Icons/ConfigurationIcon";
 
+import { useNotificationContext } from "../context/NotificationsContext";
+
 function Header() {
     const { user, logout } = useAuth();
-    const { profile } = useProfiles();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     const location = useLocation();
+
+    const { hasUnread } = useNotificationContext();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -45,28 +47,40 @@ function Header() {
 
             <header className="fixed top-0 left-0 w-19/60 justify-items-end h-screen z-[9999]">
                 <div className="flex flex-col px-4 max-w-screen-lg text-xl h-full">
-                    <Link to="/home">
-                        <div className="inline-flex items-center hover:bg-[#1e1e1e] rounded-full p-4 m-2">
-                            <LogoIcon height={30} width={30} />
-                        </div>
-                    </Link>
+                    <div>
+                        <Link to="/home">
+                            <div className="inline-flex items-center hover:bg-[#1e1e1e] rounded-full p-4 m-2">
+                                <LogoIcon height={30} width={30} />
+                            </div>
+                        </Link>
+                    </div>
 
                     <Link to="/home">
                         <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
                             <HomeIcon height={25} width={25} isActive={location.pathname === "/home"} />
-                            <span>Inicio</span>
+                            <span className={`${location.pathname === "/home" ? "font-bold" : ""}`}>Inicio</span>
                         </div>
                     </Link>
 
                     <Link to="/notificaciones">
-                        <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2">
+                        <div className="inline-flex items-center gap-5 hover:bg-[#1e1e1e] rounded-full px-4 pr-7 py-3 m-2 relative">
                             <NotificationIcon
                                 height={25}
                                 width={25}
                                 isActive={location.pathname === "/notificaciones"}
                             />
-                            <span>Notificaciones</span>
+
+                            {/* Notificaciones sin leer */}
+                            {hasUnread && (
+                                <div className="absolute top-3 left-8 flex h-3 w-3">
+                                    <div className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></div>
+                                    <div className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></div>
+                                </div>
+                            )}
+
+                            <span className={`${location.pathname === "/notificaciones" ? "font-bold" : ""}`}>Notificaciones</span>
                         </div>
+
                     </Link>
 
                     <Link to={`/${user.username}`}>
@@ -76,7 +90,7 @@ function Header() {
                                 width={25}
                                 isActive={location.pathname === `/${user.username}`}
                             />
-                            <span>Perfil</span>
+                            <span className={`${location.pathname === `/${user.username}` ? "font-bold" : ""}`}>Perfil</span>
                         </div>
                     </Link>
 

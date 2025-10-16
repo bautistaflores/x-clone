@@ -10,6 +10,7 @@ export const usePostInteractions = (post) => {
     const [likesCount, setLikesCount] = useState(0);
     const [isRetweeted, setIsRetweeted] = useState(false);
     const [retweetsCount, setRetweetsCount] = useState(0);
+    const [commentsCount, setCommentsCount] = useState(0);
 
     // Sincroniza el estado local cuando el post (de props) cambia
     useEffect(() => {
@@ -18,6 +19,7 @@ export const usePostInteractions = (post) => {
             setLikesCount(post.likesCount || 0);
             setIsRetweeted(Boolean(post.isRetweeted));
             setRetweetsCount(post.retweetsCount || 0);
+            setCommentsCount(post.commentsCount || 0);
         }
     }, [post]);
 
@@ -65,13 +67,16 @@ export const usePostInteractions = (post) => {
         }
     };
 
+
+
     return {
         isLiked,
+        handleLike,
         likesCount,
         isRetweeted,
+        handleRetweet,
         retweetsCount,
-        handleLike,
-        handleRetweet
+        commentsCount
     };
 };
 

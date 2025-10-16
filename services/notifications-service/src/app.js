@@ -1,12 +1,15 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { createClient } from 'redis';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import prisma from '../prisma/prisma.js';
+import notificationsRoutes from './routes/notifications.routes.js';
 
 const app = express();
 const httpServer = createServer(app);
 app.use(express.json());
+app.use(cookieParser());
 
 // Configuración de Socket.IO
 const io = new Server(httpServer, {
@@ -156,5 +159,7 @@ async function subscribeToNotifications() {
         }
     });
 }
+
+app.use('/notifications', notificationsRoutes);
 
 export { redisClient, subscribeToNotifications, httpServer };

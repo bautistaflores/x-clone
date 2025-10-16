@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext"
 import { PostsProvider } from "./context/PostsContext"
 import { UsersProvider } from "./context/UsersContext"
 import { ProfileProvider } from "./context/ProfilesContext"
+import { NotificationProvider } from "./context/NotificationsContext"
 
 import AuthPage from "./pages/AuthPage"
 import RegisterPage from "./pages/RegisterPage"
@@ -39,34 +40,36 @@ function App() {
 
   return (
     <AuthProvider>
-      <UsersProvider>
-        <ProfileProvider>
-          <PostsProvider>
-            <Routes location={backgroundLocation || location}>
-              <Route path="/" element={<AuthPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              
-              <Route element={<ProtectedRoute />}>
-                  <Route path="/home" element={<HomePage />} />
-                  <Route path="/post/status/:postId" element={<PostPage />} />
-                  <Route path="/notificaciones" element={<NotificationsDisplay />} />
-                  <Route path="/:username" element={<ProfilePage />} />
-              </Route>
-            </Routes>
-            
-            {/* modales */}
-            {showModal && (
-              <Routes>
-                <Route path="/compose/post" element={<ComposePost />} />
-                <Route path="/settings/profile" element={<UpdateProfilePage />} />
+      <NotificationProvider>
+        <UsersProvider>
+          <ProfileProvider>
+            <PostsProvider>
+              <Routes location={backgroundLocation || location}>
+                <Route path="/" element={<AuthPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                
+                <Route element={<ProtectedRoute />}>
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/post/status/:postId" element={<PostPage />} />
+                    <Route path="/notificaciones" element={<NotificationsDisplay />} />
+                    <Route path="/:username" element={<ProfilePage />} />
+                </Route>
               </Routes>
-            )}
-          </PostsProvider>
-        </ProfileProvider>
-      </UsersProvider>
+              
+              {/* modales */}
+              {showModal && (
+                <Routes>
+                  <Route path="/compose/post" element={<ComposePost />} />
+                  <Route path="/settings/profile" element={<UpdateProfilePage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                </Routes>
+              )}
+            </PostsProvider>
+          </ProfileProvider>
+        </UsersProvider>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

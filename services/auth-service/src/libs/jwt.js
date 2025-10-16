@@ -5,7 +5,7 @@ const EXPIRES_IN = '1h';
 
 export const generateToken = (userId) => {
   return jwt.sign(
-    { userId }, 
+    { userId: userId }, 
     JWT_SECRET, 
     { expiresIn: EXPIRES_IN }
   );

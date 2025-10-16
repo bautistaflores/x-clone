@@ -7,12 +7,14 @@ import LikeIcon from './Icons/LikeIcon';
 import RetweetIcon from './Icons/RetweetIcon';
 import CommentIcon from './Icons/CommentIcon';
 import LoadingIcon from './Icons/LoadingIcon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
+
+import { useNotificationContext } from '../context/NotificationsContext';
 
 const NotificationDisplay = memo(() => {
     const { user } = useAuth();
     const { getPostById } = usePosts();
-    const { notifications, isLoaded } = useNotifications(user?.id);
+    const { notifications, isLoaded, hasUnread, markAllAsRead } = useNotificationContext();
     const [userProfiles, setUserProfiles] = useState({});
     const [postDetails, setPostDetails] = useState({});
     const [commentDetails, setCommentDetails] = useState({});
@@ -61,9 +63,19 @@ const NotificationDisplay = memo(() => {
         }
     };
 
-    // Obtener el perfil de los usuarios y post de cada notificacion
     useEffect(() => {
-        // si las notificaciones todavia no se cargaron desde el socket, no hacer nada
+        // corregir condiciones de carrera al marcar como leidas las notificaciones
+        const timer = setTimeout(() => {
+            if (hasUnread) {
+                markAllAsRead();
+            }
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [hasUnread, markAllAsRead]);
+
+    // Obtener el perfil de los usuarios y post de cada notificacion SOLO al cargar inicialmente
+    useEffect(() => {
         if (!isLoaded) {
             return;
         }
@@ -87,7 +99,43 @@ const NotificationDisplay = memo(() => {
         } else {
             setLoading(false);
         }
-    }, [notifications, isLoaded]);
+    }, [isLoaded]);
+
+    // Manejar nuevas notificaciones
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        // obtener datos para notificaciones que no tenemos
+        const fetchMissingData = async () => {
+            const notificationsToFetch = notifications.filter(notification => {
+                const needsProfile = !userProfiles[notification.fromUserId];
+                const needsPost = !postDetails[notification.postId];
+                const needsComment = notification.commentId && !commentDetails[notification.commentId];
+                
+                return needsProfile || needsPost || needsComment;
+            });
+
+            if (notificationsToFetch.length > 0) {
+                await Promise.all(
+                    notificationsToFetch.map(async (notification) => {
+                        if (!userProfiles[notification.fromUserId]) {
+                            await fetchUserProfile(notification.fromUserId);
+                        }
+                        if (!postDetails[notification.postId]) {
+                            await fetchPostDetails(notification.postId);
+                        }
+                        if (notification.commentId && !commentDetails[notification.commentId]) {
+                            await fetchCommentDetails(notification.commentId);
+                        }
+                    })
+                );
+            }
+        };
+
+        if (Object.keys(userProfiles).length > 0) {
+            fetchMissingData();
+        }
+    }, [notifications.length]);
 
     const handleProfileClick = (event, username) => {
         event.stopPropagation();

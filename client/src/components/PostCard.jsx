@@ -31,6 +31,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
         likesCount,
         isRetweeted,
         retweetsCount,
+        commentsCount,
         handleLike,
         handleRetweet
     } = usePostInteractions(post);
@@ -172,6 +173,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                                 handleLike={handleLike}
                                 isRetweeted={isRetweeted}
                                 isLiked={isLiked}
+                                commentsCount={commentsCount}
                                 isLoading={isLoading}
                                 retweetsCount={retweetsCount}
                                 likesCount={likesCount}
@@ -216,8 +218,8 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                                 )}
 
                                 {/* Fecha de publicación formateada */}
-                                <p className="text-gray-600 hover:underline hover:cursor-pointer mt-4">
-                                    {formatPostTimestamp(post.created_at, location.pathname, isComment)}.
+                                <p className="text-gray-500 hover:underline hover:cursor-pointer mt-3">
+                                    {formatPostTimestamp(post.created_at, location.pathname, isComment)}
                                 </p>
                             </div>
 
@@ -228,6 +230,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                                 handleLike={handleLike}
                                 isRetweeted={isRetweeted}
                                 isLiked={isLiked}
+                                commentsCount={commentsCount}
                                 isLoading={isLoading}
                                 retweetsCount={retweetsCount}
                                 likesCount={likesCount}

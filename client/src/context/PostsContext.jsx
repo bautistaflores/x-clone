@@ -29,7 +29,8 @@ export const PostsProvider = ({ children }) => {
                     if (prevPost && prevPost.id === newPost.parent_id) {
                         return {
                             ...prevPost,
-                            comments: [newPost, ...(prevPost.comments || [])]
+                            comments: [newPost, ...(prevPost.comments || [])],
+                            commentsCount: (prevPost.commentsCount || 0) + 1
                         };
                     }
 
@@ -39,7 +40,7 @@ export const PostsProvider = ({ children }) => {
                 setPosts(prevPosts =>
                     prevPosts.map(p =>
                         p.id === newPost.parent_id
-                            ? { ...p, comments: [newPost, ...(p.comments || [])] }
+                            ? { ...p, comments: [newPost, ...(p.comments || [])], commentsCount: (p.commentsCount || 0) + 1 }
                             : p
                     )
                 );
@@ -51,7 +52,8 @@ export const PostsProvider = ({ children }) => {
                         ...prevMap,
                         [newPost.parent_id]: {
                             ...prevMap[newPost.parent_id], 
-                            comments: [newPost, ...(prevMap[newPost.parent_id].comments || [])]
+                            comments: [newPost, ...(prevMap[newPost.parent_id].comments || [])],
+                            commentsCount: (prevMap[newPost.parent_id].commentsCount || 0) + 1
                         }
                     };
                 });
