@@ -20,12 +20,50 @@ export const PostsProvider = ({ children }) => {
 
     const createPost = async (formData) => {
         try {
-            const res = await createPostRequest(formData)
-            setPosts(prevPosts => [res.data, ...prevPosts])
+            const res = await createPostRequest(formData);
+            const newPost = res.data; 
+
+            // si es comentario
+            if (newPost.parent_id) {
+                setPost(prevPost => {
+                    if (prevPost && prevPost.id === newPost.parent_id) {
+                        return {
+                            ...prevPost,
+                            comments: [newPost, ...(prevPost.comments || [])]
+                        };
+                    }
+
+                    return prevPost;
+                });
+    
+                setPosts(prevPosts =>
+                    prevPosts.map(p =>
+                        p.id === newPost.parent_id
+                            ? { ...p, comments: [newPost, ...(p.comments || [])] }
+                            : p
+                    )
+                );
+
+                // actualiza el post en el mapa de cache
+                setPostsMap(prevMap => {
+                    if (!prevMap[newPost.parent_id]) return prevMap;
+                    return {
+                        ...prevMap,
+                        [newPost.parent_id]: {
+                            ...prevMap[newPost.parent_id], 
+                            comments: [newPost, ...(prevMap[newPost.parent_id].comments || [])]
+                        }
+                    };
+                });
+    
+            } else {
+                // post principal
+                setPosts(prevPosts => [newPost, ...prevPosts]);
+            }
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-    }
+    };
 
     const getPosts = useCallback(async () => {
         if (posts.length > 0) {

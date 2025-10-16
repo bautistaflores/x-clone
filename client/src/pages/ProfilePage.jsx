@@ -2,15 +2,18 @@ import { useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { useProfiles } from "../context/ProfilesContext"
 import { usePosts } from "../context/PostsContext"
+import { useAuth } from "../context/AuthContext"
 import PostCard from "../components/PostCard"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import LoadingIcon from "../components/Icons/LoadingIcon"
 
 function ProfilePage() {
     const { profile, getProfile, loading: profileLoading, error } = useProfiles()
+    const { user } = useAuth()
     const { username } = useParams()
     const { userPosts, getPostsByUsername, loading: postsLoading } = usePosts()
     const navigate = useNavigate()
+    const location = useLocation()
 
     useEffect(() => {
         getProfile(username)
@@ -61,9 +64,11 @@ function ProfilePage() {
                                 </div>
                             )}
                         </div>
-                        <div>
-                            <a href="/update-profile" className="font-bold border border-gray-500/50 rounded-full px-4 py-2 hover:bg-gray-500/20 duration-200">Editar perfil</a>
-                        </div>
+                        {user?.username === profile?.username && (
+                            <div>
+                                <Link to="/settings/profile" state={{ background: location }} className="font-bold border border-gray-500/50 rounded-full px-4 py-2 hover:bg-gray-500/20 duration-200">Editar perfil</Link>
+                            </div>
+                        )}
                     </div>
 
                     {/* Nombre y username */}

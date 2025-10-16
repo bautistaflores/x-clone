@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, useCallback } from "react" // <-- Importa useCallback
-import { getProfileRequest, getProfileRequestById } from "../api/profiles"
-
+import { getProfileRequest, getProfileRequestById, updateProfileRequest, uploadProfilePictureRequest } from "../api/profiles"
 export const ProfilesContext = createContext()
+
 
 export const useProfiles = () => {
     const context = useContext(ProfilesContext)
@@ -13,7 +13,7 @@ export const ProfileProvider = ({ children }) => {
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
-    
+
     const getProfile = useCallback(async (username) => {
         setLoading(true) // Inicia la carga en el contexto
         setError(null)   // Limpia errores anteriores
@@ -48,12 +48,44 @@ export const ProfileProvider = ({ children }) => {
         }
     }, [])
 
+
+    const updateProfile = async (formData, selectedImage) => {
+        try {
+            if (selectedImage) {
+                await uploadProfilePictureRequest(selectedImage);
+            }
+    
+            const resProfile = await updateProfileRequest(formData);
+            
+            if (resProfile.data.success && resProfile.data.profile) {
+                
+                setProfile(prevProfile => {
+                    if (!prevProfile) return { profile: resProfile.data.profile };
+    
+                    return {
+                        ...prevProfile,
+                        profile: {
+                            ...prevProfile.profile,
+                            ...resProfile.data.profile
+                        }
+                    };
+                });
+            }
+    
+            return resProfile.data;
+        } catch (error) {
+            console.error("Error al actualizar el perfil en el contexto:", error);
+            throw error; 
+        }
+    };
+
     return (
         <ProfilesContext.Provider 
             value={{ 
                 profile, 
                 getProfile,
                 getProfileById,
+                updateProfile,
                 loading,
                 error
             }}>

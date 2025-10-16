@@ -18,7 +18,7 @@ function ComposePost() {
 
     return (
         // fondosemi-transparente
-        <div style={{ backgroundColor: 'rgba(91, 112, 131, 0.4)' }} className="fixed inset-0 flex items-start justify-center pt-10 z-50">
+        <div style={{ backgroundColor: 'rgba(91, 112, 131, 0.4)' }} className="fixed inset-0 flex items-start justify-center pt-10 z-9999">
             <div className="bg-black text-white rounded-2xl w-full max-w-xl">
                 {/* boton cerrar */}
                 <div>

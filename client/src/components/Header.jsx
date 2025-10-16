@@ -89,22 +89,22 @@ function Header() {
                     </Link>
 
                     {/* --- perfil y cerrar sesión --- */}
-                    {profile && (
+                    {user && (
                         <div className="relative mt-auto" ref={dropdownRef}>
                             <div
                                 className="flex mt-auto items-center gap-3 px-4 py-2 ml-2 my-4 cursor-pointer hover:bg-[#1e1e1e] transition-all duration-200 rounded-full"
                                 onClick={() => setIsOpen(!isOpen)}
                             >
                                 <img
-                                    src={profile.profile.profile_picture}
-                                    alt={profile.username}
+                                    src={user?.profile?.profile_picture}
+                                    alt={user.username}
                                     className="w-9 h-9 rounded-full cursor-pointer"
                                 />
                                 <div className="flex flex-col">
                                     <span className="font-semibold text-[17px]">
-                                        {profile.profile.full_name}
+                                        {user?.profile?.full_name}
                                     </span>
-                                    <span className="text-sm text-gray-500">@{user.username}</span>
+                                    <span className="text-sm text-gray-500">@{user?.username}</span>
                                 </div>
 
                                 <div className="ml-auto">
@@ -125,7 +125,7 @@ function Header() {
                                         }}
                                     >
                                         <span className="text-[16px] font-semibold">
-                                            Cerrar la sesión de <br /> @{user.username}
+                                            Cerrar la sesión de <br /> @{user?.username}
                                         </span>
                                     </button>
                                 </div>

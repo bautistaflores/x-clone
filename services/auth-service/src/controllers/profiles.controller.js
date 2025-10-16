@@ -57,10 +57,20 @@ export const getProfile = async (req, res) => {
 
 export const getMyProfile = async (req, res) => {
     const userId = req.userId;
-
+    
     try {
-        const profile = await prisma.profile.findUnique({
-            where: { user_id: userId }
+        const profile = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                username: true,
+                profile: {
+                    select: {
+                        full_name: true,
+                        bio: true,
+                        profile_picture: true
+                    }
+                }
+            }
         });
 
         res.json(profile);
@@ -71,16 +81,26 @@ export const getMyProfile = async (req, res) => {
 }
 
 export const updateProfile = async (req, res) => {
-    const { full_name, bio } = req.body;
+    const { full_name, bio } = req.body.profile;
     const userId = req.userId;
 
+    if (full_name === undefined || full_name.trim() === '') {
+        return res.status(400).json({ error: 'El nombre no puede estar vacío' });
+    }
+
     try {
+        const dataToUpdate = {}
+
+        if (full_name !== undefined) {
+            dataToUpdate.full_name = full_name;
+        }
+        if (bio !== undefined) {
+            dataToUpdate.bio = bio; 
+        }
+
         const updatedProfile = await prisma.profile.update({
             where: { user_id: userId },
-            data: { 
-                full_name: full_name || undefined,
-                bio: bio || undefined
-            }
+            data: dataToUpdate
         });
 
         res.json({

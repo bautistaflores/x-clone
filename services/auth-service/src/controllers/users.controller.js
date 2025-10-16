@@ -88,7 +88,10 @@ export const login = async (req, res) => {
                   { username: userInput },
                   { email: userInput }
                 ]
-              }
+            },
+            include: {
+                profile: true
+            }
         })
         if (!user) return res.status(400).json(['Usuario no encontrado']);
 
@@ -114,6 +117,7 @@ export const login = async (req, res) => {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                profile: user.profile,
             },
         });
     } catch (error) {
@@ -160,10 +164,8 @@ export const verifyAuth = async (req, res) => {
         // El middleware authenticate ya verificó el token y asignó req.userId
         const user = await prisma.user.findUnique({
             where: { id: req.userId },
-            select: {
-                id: true,
-                username: true,
-                email: true
+            include: {
+                profile: true
             }
         });
 
@@ -173,6 +175,7 @@ export const verifyAuth = async (req, res) => {
 
         res.json({
             user,
+            profile: user.profile,
             isAuthenticated: true
         });
     } catch (error) {

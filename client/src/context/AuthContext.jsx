@@ -53,7 +53,6 @@ export const AuthProvider = ({ children }) => {
     const signin = async (user) => {
         try {
             const res = await loginRequest(user)
-            console.log('Respuesta del login:', res.data)
             setUser(res.data.user)
             setIsAuthenticated(true)
         } catch (error) {
@@ -66,7 +65,6 @@ export const AuthProvider = ({ children }) => {
         try {
             setLoading(true)
             const res = await logoutRequest()
-            console.log(res.data)
             Cookies.remove('token')
             setUser(null)
             setIsAuthenticated(false)

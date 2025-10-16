@@ -23,7 +23,7 @@ function App() {
   // navegación directa a /compose/post
   let backgroundLocation = background;
 
-  if (location.pathname === '/compose/post' && !background) {
+  if (location.pathname === '/compose/post' || location.pathname === '/settings/profile' && !background) {
     backgroundLocation = { pathname: '/home' };
   }
   if ((location.pathname === '/login' || location.pathname === '/register') && !background) {
@@ -32,9 +32,10 @@ function App() {
 
   const showModal = 
     background || 
-    location.pathname === '/compose/post' ||
     location.pathname === '/register' ||
-    location.pathname === '/login';
+    location.pathname === '/login' ||
+    location.pathname === '/compose/post' ||
+    location.pathname === '/settings/profile';
 
   return (
     <AuthProvider>
@@ -50,7 +51,6 @@ function App() {
                   <Route path="/home" element={<HomePage />} />
                   <Route path="/post/status/:postId" element={<PostPage />} />
                   <Route path="/notificaciones" element={<NotificationsDisplay />} />
-                  <Route path="/update-profile" element={<UpdateProfilePage />} />
                   <Route path="/:username" element={<ProfilePage />} />
               </Route>
             </Routes>
@@ -59,6 +59,7 @@ function App() {
             {showModal && (
               <Routes>
                 <Route path="/compose/post" element={<ComposePost />} />
+                <Route path="/settings/profile" element={<UpdateProfilePage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
               </Routes>

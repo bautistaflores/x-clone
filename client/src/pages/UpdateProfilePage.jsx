@@ -1,19 +1,34 @@
 import { useEffect, useState } from 'react';
-import { getMyProfileRequest, updateProfileRequest, uploadProfilePictureRequest } from '../api/profiles';
-import { useNavigate } from 'react-router-dom';
+import { getMyProfileRequest } from '../api/profiles';
+import { useProfiles } from '../context/ProfilesContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import CloseIcon from '../components/Icons/CloseIcon';
+import CameraIcon from '../components/Icons/CameraIcon';
 
 function UpdateProfilePage() {
     const navigate = useNavigate();
     const { authLoading, isAuthenticated } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const { updateProfile } = useProfiles();
     const [formData, setFormData] = useState({
-        full_name: '',
-        bio: ''
+        profile: {
+            full_name: '',
+            bio: '',
+        }
     });
     const [selectedImage, setSelectedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const location = useLocation()
+
+    const handleCloseModal = () => {
+        if (location.state && location.state.background) {
+            navigate(-1)
+        } else {
+            navigate('/home')
+        }
+    }
 
     useEffect(() => {
         if (authLoading) return;
@@ -22,17 +37,21 @@ function UpdateProfilePage() {
             return
         }
 
-        getMyProfileRequest().then(res => {
+        const fetchProfile = async () => {
+            const res = await getMyProfileRequest();
             setFormData(res.data);
-        });
-
+        }
+        fetchProfile();
     }, [authLoading, isAuthenticated, navigate]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            profile: {
+                ...prev.profile,
+                [name]: value
+            }
         }));
     };
 
@@ -52,16 +71,13 @@ function UpdateProfilePage() {
         setError(null);
 
         try {
-            // Primero subir la imagen si hay una seleccionada
-            if (selectedImage) {
-                await uploadProfilePictureRequest(selectedImage);
-            }
+            const response = await updateProfile(formData, selectedImage);
 
-            // Luego actualizar el perfil
-            await updateProfileRequest(formData);
+            if (response && response.success) {
+                navigate(`/${formData.username}`);
+            }
             
-            // Redirigir al perfil o mostrar mensaje de éxito
-            navigate('/home');
+
         } catch (error) {
             setError(error.response?.data?.error || 'Error al actualizar el perfil');
         } finally {
@@ -70,96 +86,104 @@ function UpdateProfilePage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-6">Actualizar Perfil</h1>
-            
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                </div>
-            )}
+        <div style={{ backgroundColor: 'rgba(91, 112, 131, 0.4)' }} className="fixed inset-0 flex items-start justify-center pt-10 z-9999">
+            <div className=" bg-black rounded-2xl w-full max-w-xl">
 
-            <form onSubmit={handleProfileUpdate} className="space-y-6">
-                {/* Sección de imagen de perfil */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                        Foto de Perfil
-                    </label>
-                    <div className="flex items-center space-x-4">
-                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
-                            {previewUrl ? (
-                                <img 
-                                    src={previewUrl} 
-                                    alt="Preview" 
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    <img 
-                                        src={formData.profile_picture || 'img'} 
-                                        alt="Preview" 
-                                        className="w-full h-full object-cover"
-                                    />
+                <div className="flex items-center">
+                    <input type="file" accept="image/*" className="hidden" />
+                    <button onClick={handleCloseModal} className="cursor-pointer hover:bg-[#1e1e1e] rounded-full p-2 m-2">
+                        <CloseIcon />
+                    </button>
+                    <h1 className="text-2xl font-bold ml-10">Editar perfil</h1>
+
+                    {/* Botón de envío */}
+                    <button
+                        type="submit"
+                        onClick={handleProfileUpdate}
+                        disabled={loading}
+                        className={`ml-auto mr-3 cursor-pointer hover:bg-[#1e1e1e] rounded-full p-2 m-2 font-semibold text-black
+                            ${loading ? 'bg-blue-400' : 'bg-white hover:bg-gray-200'} 
+                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                    >
+                        {loading ? 'Guardando...' : 'Guardar'}
+                    </button>
+                </div>
+                
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        {error}
+                    </div>
+                )}
+
+                <form className="space-y-6 mx-4 mb-10">
+                    {/* Sección de imagen de perfil */}
+                    <div className="space-y-2">
+                        <div className="flex items-center space-x-4">
+                            <label htmlFor="profile-picture-upload" className="cursor-pointer">
+                                <div className="relative w-24 h-24 rounded-full overflow-hidden ring-2 ring-black group">
+                                    {previewUrl ? (
+                                        <img 
+                                            src={previewUrl} 
+                                            alt="Preview" 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={formData.profile?.profile_picture || '/images/default_profile.webp'}
+                                            alt="Profile" 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    )}
+
+                                    <div className="absolute inset-0 bg-gray-800/30 flex items-center justify-center">
+                                        <div className="bg-gray-800/90 rounded-full p-2.5 hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer">
+                                            <CameraIcon className="w-10 h-10 text-white" />
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
+                            </label>
+
+                            <input
+                                id="profile-picture-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="hidden"
+                            />
                         </div>
+                    </div>
+
+                    {/* Campo de nombre */}
+                    <div className="relative border border-gray-500 rounded-sm py-1 px-2 focus-within:border-blue-400 focus-within:border-2">
+                        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+                            Nombre
+                        </label>
                         <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="block w-full text-sm text-gray-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100"
+                            type="text"
+                            id="full_name"
+                            name="full_name"
+                            value={formData?.profile?.full_name || ''}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full rounded-md outline-none"
                         />
                     </div>
-                </div>
 
-                {/* Campo de nombre */}
-                <div>
-                    <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
-                        Nombre Completo
-                    </label>
-                    <input
-                        type="text"
-                        id="full_name"
-                        name="full_name"
-                        value={formData.full_name || ''}
-                        onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Tu nombre completo"
-                    />
-                </div>
-
-                {/* Campo de biografía */}
-                <div>
-                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                        Biografía
-                    </label>
-                    <textarea
-                        id="bio"
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleInputChange}
-                        rows="4"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Cuéntanos sobre ti..."
-                    />
-                </div>
-
-                {/* Botón de envío */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-                        ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} 
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-                >
-                    {loading ? 'Actualizando...' : 'Actualizar Perfil'}
-                </button>
-            </form>
+                    {/* Campo de biografía */}
+                    <div className="relative border border-gray-500 rounded-sm py-1 px-2 focus-within:border-blue-400 focus-within:border-2">
+                        <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                            Biografía
+                        </label>
+                        <textarea
+                            id="bio"
+                            name="bio"
+                            value={formData?.profile?.bio || ''}
+                            onChange={handleInputChange}
+                            rows="3"
+                            className="mt-1 block w-full rounded-md outline-none resize-none"
+                        />
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
