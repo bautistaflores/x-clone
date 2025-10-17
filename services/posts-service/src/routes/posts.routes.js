@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { createPost, retweetPost, likePost, getPosts, getPostWithComments, getPostById } from '../controllers/posts.controller.js';
+import { createPost, deletePost, retweetPost, likePost, getPosts, getPostWithComments, getPostById } from '../controllers/posts.controller.js';
 import { verifyToken } from '../middlewares/auth.js';
 import upload from '../middlewares/upload.middleware.js';
 
 const router = Router();
 
 router.post('/create', verifyToken, upload.single('image'), createPost);
+router.delete('/delete/:postId', verifyToken, deletePost);
 router.post('/:postId/retweet', verifyToken, retweetPost);
 router.post('/:postId/like', verifyToken, likePost);
 

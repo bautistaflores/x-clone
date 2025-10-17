@@ -21,10 +21,10 @@ model Post {
   
   // Jerarquía de posts
   parent_id        String?    // Para comentarios
-  parent           Post?      @relation("CommentToPost", fields: [parent_id], references: [id])
+  parent           Post?      @relation("CommentToPost", fields: [parent_id], references: [id], onDelete: Cascade)
   comments         Post[]     @relation("CommentToPost")
   
-  // Retweets (Relación para obtener los posts que *retweetean* este post)
+  // Retweets
   retweeters     Retweet[] @relation("OriginalPostToRetweets")
 
   // Likes
@@ -41,13 +41,13 @@ model Post {
 model Like {
   id         String   @id @default(uuid())
   post_id    String
-  post       Post     @relation(fields: [post_id], references: [id])
+  post       Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
   user_id    String   // ID del usuario en auth-service
   created_at DateTime @default(now()) @map("created_at")
 
   @@unique([post_id, user_id]) // Evitar likes duplicados
   @@index([user_id]) // Para consultas como "posts que di like"
-
+  @@index([post_id])
   @@map("likes")
 }
 

@@ -42,6 +42,37 @@ export const createPost = async (req, res) => {
     }
 }
 
+export const deletePost = async (req, res) => {
+    const { postId } = req.params;
+    const userId = String(req.user.userId);
+
+    try {
+        // Verificar si el post existe
+        const post = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post no encontrado' });
+        }
+
+        if (post.user_id !== userId) {
+            return res.status(403).json({ error: 'No tienes permisos para eliminar este post' });
+        }
+
+        await prisma.post.delete({
+            where: { id: postId }
+        });
+
+        console.log('Post eliminado exitosamente');
+        res.status(200).json({ message: 'Post eliminado exitosamente' });
+        
+    } catch (error) {
+        console.error('Error al eliminar el post:', error);
+        res.status(500).json({ error: 'Error al eliminar el post' });
+    }
+}
+
 export const retweetPost = async (req, res) => {
     const { postId } = req.params;
     const userId = String(req.user.userId);
@@ -197,8 +228,6 @@ export const likePost = async (req, res) => {
         res.status(500).json({ error: 'Error al likear el post' });
     }
 }
-
-
 
 export const getPosts = async (req, res) => {
     // para consumir el servicio de usuarios

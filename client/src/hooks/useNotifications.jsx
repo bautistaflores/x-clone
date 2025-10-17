@@ -11,9 +11,11 @@ const useNotifications = (userId) => {
     const userIdRef = useRef(userId);
 
     useEffect(() => {
-        const unreadExists = notifications.some(notification => !notification.read);
+        // filtrar las notificaciones para que no se muestren las notificaciones del usuario logueado
+        const filteredNotifications = notifications.filter(notification => String(userId) !== notification.fromUserId);
+        const unreadExists = filteredNotifications.some(notification => !notification.read);
         setHasUnread(unreadExists);
-    }, [notifications]);
+    }, [notifications, userId]);
 
     const markAllAsRead = useCallback(async () => {
         if (!hasUnread) return;

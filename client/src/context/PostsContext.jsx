@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect, useCallback } from "react"
-import { getPostsRequest, getPostWithCommentsRequest, createPostRequest, getPostsByUsernameRequest, getPostByIdRequest } from "../api/posts"
+import { getPostsRequest, getPostWithCommentsRequest, createPostRequest, getPostsByUsernameRequest, getPostByIdRequest, deletePostRequest } from "../api/posts"
 import { useUsers } from "./UsersContext"
 
 export const PostsContext = createContext()
@@ -66,6 +66,65 @@ export const PostsProvider = ({ children }) => {
             console.log(error);
         }
     };
+
+
+    const deletePost = async (postId) => {
+        try {
+            // Buscar el post que se va a eliminar para obtener su parent_id
+            const postToDelete = posts.find(p => p.id === postId) || 
+                                userPosts.find(p => p.id === postId) || 
+                                (post && post.id === postId ? post : null) ||
+                                (post?.comments?.find(c => c.id === postId));
+
+            await deletePostRequest(postId)
+
+            setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+
+            setUserPosts(prevUserPosts => prevUserPosts.filter(p => p.id !== postId));
+
+            if (post && post.id === postId) {
+                setPost(null);
+            }
+
+            // si es comentario, actualizar el post padre
+            if (postToDelete && postToDelete.parent_id) {
+                setPost(prevPost => {
+                    if (prevPost && prevPost.id === postToDelete.parent_id) {
+                        return {
+                            ...prevPost,
+                            comments: prevPost.comments.filter(c => c.id !== postId),
+                            commentsCount: Math.max(0, (prevPost.commentsCount || 0) - 1)
+                        };
+                    }
+
+                    return prevPost;
+                });
+
+                setPosts(prevPosts =>
+                    prevPosts.map(p =>
+                        p.id === postToDelete.parent_id
+                            ? { ...p, comments: p.comments.filter(c => c.id !== postId), commentsCount: Math.max(0, (p.commentsCount || 0) - 1) }
+                            : p
+                    )
+                );
+
+                // actualiza el post en el mapa de cache
+                setPostsMap(prevMap => {
+                    const newMap = { ...prevMap };
+                    if (newMap[postToDelete.parent_id]) {
+                        newMap[postToDelete.parent_id] = {
+                            ...newMap[postToDelete.parent_id],
+                            comments: newMap[postToDelete.parent_id].comments.filter(c => c.id !== postId),
+                            commentsCount: Math.max(0, (newMap[postToDelete.parent_id].commentsCount || 0) - 1)
+                        };
+                    }
+                    return newMap;
+                });
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const getPosts = useCallback(async () => {
         if (posts.length > 0) {
@@ -226,6 +285,7 @@ export const PostsProvider = ({ children }) => {
             posts,
             userPosts,
             createPost,
+            deletePost,
             getPosts,
             getPostsByUsername,
             post,

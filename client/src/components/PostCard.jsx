@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useUsers } from "../context/UsersContext"
 import { useAuth } from "../context/AuthContext";
+import { usePosts } from "../context/PostsContext";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { formatPostTimestamp } from "../utils/formatPostTimestamp";
 import InteractionsPost from "./InteractionsPost";
 import RetweetIcon from "./Icons/RetweetIcon";
+import ConfigurationIcon from "./Icons/ConfigurationIcon";
 
 import ParentPostDisplay from "./ParentPostDisplay";
 import usePostInteractions from "../hooks/usePostInteractions";
@@ -12,11 +14,15 @@ import usePostInteractions from "../hooks/usePostInteractions";
 
 function PostCard({ post, isComment = false, postPage = false, commentPage = false }) {
     const { getUser } = useUsers();
-    const navigate = useNavigate();
     const { user } = useAuth();
+    const { deletePost } = usePosts();
+    const navigate = useNavigate();
 
     
     const [isLoading, setIsLoading] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     const location = useLocation()
     
     // detecta si estamos en la página de un comentario
@@ -59,6 +65,22 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
         return () => { isMounted = false; };
     }, [post]);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen]);
+
     const handleProfileClick = (event, username) => {
         event.stopPropagation();
         navigate(`/${username}`);
@@ -71,8 +93,8 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
 
     const profileAndDate = (postPage = false) => {
         return (
-            <div className="flex items-center gap-2">
-                <div className={`flex ${postPage ? 'flex-col' : 'flex-row gap-1'}`}>
+            <div className="relative flex w-full items-center gap-2">
+                <div className={`flex w-full ${postPage ? 'flex-col' : 'flex-row gap-1'}`}>
                     <p
                         className={`font-semibold hover:underline hover:cursor-pointer ${postPage ? 'leading-none' : ''}`}
                         onClick={(e) => handleProfileClick(e, postUser.username)}
@@ -95,6 +117,47 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                                 {formatPostTimestamp(post.created_at, location.pathname, isComment)}.
                             </p>
                         </>
+                    )}
+                </div>
+
+                <div className="relative ml-auto" ref={dropdownRef}>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpen(!isOpen);
+                        }}
+                        className="text-gray-500 hover:bg-blue-500/15 hover:text-blue-500 cursor-pointer rounded-full p-1.5 transition-all duration-200"
+                    >
+                        <ConfigurationIcon height={18} width={18} color="currentColor"/>
+                    </button>
+
+                    {isOpen && (
+                        <div className="absolute right-0 bottom-full mb-1 border border-gray-500/50 rounded-xl w-48 bg-black shadow-lg z-10 shadow-white/10"
+                        onClick={(e) => e.stopPropagation()}>
+                            {user?.username === postUser?.username ? (
+                                <button 
+                                    className="flex items-center rounded-xl cursor-pointer gap-3 px-4 py-2 w-full hover:bg-[#0a0a0a] text-left font-bold" 
+                                    onClick={async () => {
+                                        setIsOpen(false);
+                                        if (postPage) {
+                                            navigate(-1);
+                                        }
+                                        await deletePost(post.id);
+                                    }}
+                                >
+                                    <span className="text-red-500">Eliminar</span>
+                                </button>
+                            ) : (
+                                <button 
+                                    className="flex items-center rounded-xl cursor-pointer gap-3 px-4 py-2 w-full hover:bg-[#0a0a0a] text-left font-bold" 
+                                    onClick={async () => {
+                                        setIsOpen(false);
+                                    }}
+                                >
+                                    <span className="">Denunciar post</span>
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
@@ -156,9 +219,9 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                             {profileAndDate()}
 
                             {/* Contenido del post */}
-                            <div className="pb-2">
+                            <div className="pb-3">
                                 {/* contenido */}
-                                <p>{post.content}</p>
+                                <p className="leading-none">{post.content}</p>
 
                                 {/* imagen */}
                                 {post.media_url && (
@@ -208,7 +271,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                         {/* Content */}
                         <div className="flex-grow">
                             {/* Contenido del post */}
-                            <div className="py-2">
+                            <div className="">
                                 {/* contenido */}
                                 <p>{post.content}</p>
 
@@ -218,7 +281,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                                 )}
 
                                 {/* Fecha de publicación formateada */}
-                                <p className="text-gray-500 hover:underline hover:cursor-pointer mt-3">
+                                <p className="text-gray-500 hover:underline hover:cursor-pointer my-3">
                                     {formatPostTimestamp(post.created_at, location.pathname, isComment)}
                                 </p>
                             </div>

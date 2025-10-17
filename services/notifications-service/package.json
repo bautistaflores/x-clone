@@ -21,6 +21,6 @@
     "socket.io": "^4.7.4"
   },
   "devDependencies": {
-    "prisma": "^6.7.0"
+    "prisma": "^6.17.1"
   }
 }

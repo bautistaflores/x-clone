@@ -7,6 +7,8 @@ export const createPostRequest = (formData) => api.post('/posts/create', formDat
         'Content-Type': 'multipart/form-data'
     }
 });
+export const deletePostRequest = (postId) => api.delete(`/posts/delete/${postId}`);
+
 export const likePostRequest = (postId) => api.post(`/posts/${postId}/like`);
 export const retweetPostRequest = (postId) => api.post(`/posts/${postId}/retweet`);
 
