@@ -1,8 +1,10 @@
 import app from './app.js';
+import logger from './libs/logger.js';
+import config from './config.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
-// Escuchar en 0.0.0.0 para aceptar conexiones desde cualquier IP dentro de la red Docker
+// Escucha en 0.0.0.0 para aceptar conexiones desde cualquier IP dentro de la red Docker
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Auth-Service on port ${PORT}`);
+  logger.info(`Auth-Service on port ${PORT}`);
 });
