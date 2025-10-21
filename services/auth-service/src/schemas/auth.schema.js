@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
+// Esquema para el registro de un nuevo usuario
 export const registerSchema = z.object({
-    username: z.string().min(1, { message: 'Username is required' }),
-    email: z.string().email({ message: 'Invalid email' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters' })
+    username: z.string().min(1, { message: 'El nombre de usuario es requerido' }),
+    email: z.string().email({ message: 'El email es inválido' }),
+    password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
 });
 
+// Esquema para el inicio de sesión
 export const loginSchema = z.object({
-    userInput: z.string().min(1, { message: 'Username or email is required' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters' })
+    userInput: z.string().min(1, { message: 'El nombre de usuario o email es requerido' }),
+    password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
 });

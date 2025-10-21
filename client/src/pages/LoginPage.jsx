@@ -51,8 +51,8 @@ function LoginPage() {
                     <span className="text-3xl font-bold mb-4">Inicia sesión en X</span>
 
                     {
-                        loginErrors.map((error, i) => (
-                            <p className="text-red-500" key={i}>{error}</p>
+                        loginErrors.map((error) => (
+                            <p className="text-red-500" key={error}>{error}</p>
                         ))
                     }
 

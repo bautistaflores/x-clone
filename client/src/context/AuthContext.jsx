@@ -23,9 +23,13 @@ export const AuthProvider = ({ children }) => {
                 setUser(res.data.user)
                 setIsAuthenticated(true)
             } catch (error) {
-                console.log('No hay sesión activa')
-                setIsAuthenticated(false)
-                setUser(null)
+                if (error.response?.status !== 429) {
+                    console.log('No hay sesión activa')
+                    setIsAuthenticated(false)
+                    setUser(null)
+                } else {
+                    console.warn('Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.')
+                }
             } finally {
                 setLoading(false)
             }
@@ -41,9 +45,14 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true)
             setErrors([])
         } catch (error) {
-            console.log("Error de registro", error.response)
-            if (error.response && error.response.data) {
-                setErrors(Array.isArray(error.response.data) ? error.response.data : [error.response.data.error || "Error aca"]);
+            const data = error.response.data;
+
+            if (data && data.details) {
+                // error de zod (array)
+                setErrors(data.details.map(err => err.message));
+            } else if (data && data.error) {
+                // error de AppError (string)
+                setErrors([data.error]);
             } else {
                 setErrors(["Error desconocido al registrar"]);
             }
@@ -55,9 +64,19 @@ export const AuthProvider = ({ children }) => {
             const res = await loginRequest(user)
             setUser(res.data.user)
             setIsAuthenticated(true)
+            setErrors([])
         } catch (error) {
-            console.log(error)
-            setErrors(error.response.data)
+            const data = error.response.data;
+
+            if (data && data.details) {
+                // error de zod (array)
+                setErrors(data.details.map(err => err.message));
+            } else if (data && data.error) {
+                // error de AppError (string)
+                setErrors([data.error]);
+            } else {
+                setErrors(["Error desconocido al iniciar sesión"]);
+            }
         }
     }
 

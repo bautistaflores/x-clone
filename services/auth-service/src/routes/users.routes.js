@@ -1,23 +1,21 @@
 import { Router } from 'express';
-import { register, login, logout, verifyAuth, getUsersByIds, getUserByUsername } from '../controllers/users.controller.js';
+import { register, login, logout } from '../controllers/auth.controller.js';
+import { verifyAuth, getUsersByIds, getUserByUsername } from '../controllers/users.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { validateSchema } from '../middlewares/validate.middleware.js';
 import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
+import { authLimiter } from '../middlewares/rateLimit.middleware.js';
+import catchAsync from '../utils/catchAsync.js';
 
 const router = Router();
 
-router.get('/verify', authenticate, verifyAuth);
+router.get('/verify', authenticate, catchAsync(verifyAuth));
 
-router.post('/register', validateSchema(registerSchema), register);
-router.post('/login', validateSchema(loginSchema), login);
-router.post('/logout', authenticate, logout);
+router.post('/register', authLimiter, validateSchema(registerSchema), catchAsync(register));
+router.post('/login', authLimiter, validateSchema(loginSchema), catchAsync(login));
+router.post('/logout', authenticate, catchAsync(logout));
 
-router.post('/batch', authenticate, getUsersByIds);
-router.get('/:username', authenticate, getUserByUsername);
-
-router.put('/update', (req, res) => {
-    res.send('Update route');
-});
-
+router.post('/batch', authenticate, catchAsync(getUsersByIds));
+router.get('/:username', authenticate, catchAsync(getUserByUsername));
 
 export default router;
