@@ -114,7 +114,7 @@ function PostCard({ post, isComment = false, postPage = false, commentPage = fal
                         <>
                             <p className="text-gray-600 font-bold">·</p>
                             <p className="text-gray-600 hover:underline">
-                                {formatPostTimestamp(post.created_at, location.pathname, isComment)}.
+                                {formatPostTimestamp(post.created_at, location.pathname, isComment)}
                             </p>
                         </>
                     )}
