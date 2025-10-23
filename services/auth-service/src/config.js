@@ -14,8 +14,6 @@ const envSchema = z.object({
 
     PORT: z.coerce.number().default(3000), // 'coerce' convierte "3000" a número
 
-    POSTGRES_DB: z.string().min(1, 'POSTGRES_DB no puede estar vacio'),
-
     REDIS_URL: z.string().url(),
 });
 

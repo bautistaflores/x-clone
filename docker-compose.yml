@@ -14,20 +14,27 @@ services:
     command: npm run dev
     networks:
       - app-network
+    depends_on:
+      - auth-service
+      - posts-service
+      - notifications-service
 
-  auth-service: # Servicio para el microservicio de autenticación
+  auth-service: # Servicio para el microservicio de usuarios y autenticación
     build: ./services/auth-service
     container_name: auth-service
     # ports: No es necesario exponer el puerto 4000 al host si se accede vía Nginx
     depends_on:
-      - postgres
-      - redis
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
     env_file:
       - ./services/auth-service/.env
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
+    command: >
+      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/auth-service:/app
       - /app/node_modules
@@ -39,13 +46,15 @@ services:
     container_name: posts-service
     # ports: No es necesario exponer el puerto 5000 al host si se accede vía Nginx
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - ./services/posts-service/.env
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
+    command: >
+      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/posts-service:/app
       - /app/node_modules
@@ -57,14 +66,17 @@ services:
     container_name: notifications-service
     # ports: No es necesario exponer el puerto 6000 al host si se accede vía Nginx
     depends_on:
-      - postgres
-      - redis
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
     env_file:
       - ./services/notifications-service/.env
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
+    command: >
+      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/notifications-service:/app
       - /app/node_modules
@@ -76,15 +88,19 @@ services:
     container_name: postgres
     restart: always
     env_file: 
-      - ./config/auth.env 
-      - ./config/posts.env
-      - ./config/notifications.env
+      - ./config/db.env
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./config/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
     ports:
       - "5432:5432"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:alpine
@@ -95,9 +111,13 @@ services:
       - redisdata:/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   nginx:
-
     image: nginx:alpine
     container_name: nginx-gateway
     ports:
