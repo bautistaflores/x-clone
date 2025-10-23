@@ -19,10 +19,8 @@ export const register = async (req, res) => {
         user: {
             id: newUser.id,
             username: newUser.username,
-            email: newUser.email
-        },
-        profile: {
-            full_name: newUser.profile.full_name
+            email: newUser.email,
+            profile: newUser.profile
         }
     });
 }

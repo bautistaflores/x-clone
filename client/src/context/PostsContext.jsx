@@ -23,6 +23,9 @@ export const PostsProvider = ({ children }) => {
             const res = await createPostRequest(formData);
             const newPost = res.data; 
 
+            // Cargar información del usuario que creó el post
+            await fetchUsers([newPost.user_id]);
+
             // si es comentario
             if (newPost.parent_id) {
                 setPost(prevPost => {
