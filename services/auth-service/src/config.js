@@ -8,13 +8,13 @@ dotenv.config();
 const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production']).default('development'),
     
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL no puede estar vacio'),
     
     JWT_SECRET: z.string().min(1, 'JWT_SECRET no puede estar vacio'),
 
     PORT: z.coerce.number().default(3000), // 'coerce' convierte "3000" a número
 
-    REDIS_URL: z.string().url(),
+    REDIS_URL: z.string().min(1, 'REDIS_URL no puede estar vacio'),
 });
 
 // validamos las variables de entorno
