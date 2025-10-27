@@ -1,13 +1,16 @@
-FROM node:20
+FROM node:20-alpine
 
 # crea directorio dentro del contenedor
 WORKDIR /app
+
+# establece el entorno de producción
+ENV NODE_ENV=production
 
 # copia el package.json y package-lock.json
 COPY package*.json ./
 
 # instala las dependencias
-RUN npm install --include=dev
+RUN npm ci --omit=dev
 
 # copia el resto del código fuente
 COPY . .
@@ -19,4 +22,4 @@ RUN npx prisma generate
 EXPOSE 3000
 
 # corre la app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
