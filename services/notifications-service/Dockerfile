@@ -1,25 +1,26 @@
-FROM node:20-alpine
-
-# crea directorio dentro del contenedor
+# --- BASE para ambas etapas ---
+FROM node:20-alpine AS base
 WORKDIR /app
-
-# establece el entorno de producción
-ENV NODE_ENV=production
-
-# copia el package.json y package-lock.json
 COPY package*.json ./
 
-# instala las dependencias
-RUN npm ci --omit=dev
+# --- DESARROLLO ---
+FROM base AS development
+ENV NODE_ENV=development
 
-# copia el resto del código fuente
+RUN npm ci
 COPY . .
 
-# genera el cliente de Prisma
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
+# --- PRODUCCION ---
+FROM base AS production
+ENV NODE_ENV=production
+
+RUN npm ci --omit=dev
+COPY . .
+
 RUN npx prisma generate
 
-# expone el puerto
 EXPOSE 3000
-
-# corre la app
 CMD ["npm", "start"]

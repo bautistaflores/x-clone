@@ -20,7 +20,11 @@ services:
       - notifications-service
 
   auth-service: # Servicio para el microservicio de usuarios y autenticación
-    build: ./services/auth-service
+    build: 
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+      target: development
+    entrypoint: /app/entrypoint-dev.sh
     container_name: auth-service
     # ports: No es necesario exponer el puerto 4000 al host si se accede vía Nginx
     depends_on:
@@ -33,16 +37,19 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: >
-      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/auth-service:/app
+      - ./config/entrypoint-dev.sh:/app/entrypoint-dev.sh:ro
       - /app/node_modules
     networks:
       - app-network
 
   posts-service:
-    build: ./services/posts-service
+    build: 
+      context: ./services/posts-service
+      dockerfile: Dockerfile
+      target: development
+    entrypoint: /app/entrypoint-dev.sh
     container_name: posts-service
     # ports: No es necesario exponer el puerto 5000 al host si se accede vía Nginx
     depends_on:
@@ -53,16 +60,19 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: >
-      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/posts-service:/app
+      - ./config/entrypoint-dev.sh:/app/entrypoint-dev.sh:ro
       - /app/node_modules
     networks:
       - app-network
 
   notifications-service:
-    build: ./services/notifications-service
+    build: 
+      context: ./services/notifications-service
+      dockerfile: Dockerfile
+      target: development
+    entrypoint: /app/entrypoint-dev.sh
     container_name: notifications-service
     # ports: No es necesario exponer el puerto 6000 al host si se accede vía Nginx
     depends_on:
@@ -75,10 +85,9 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: >
-      sh -c "npx prisma migrate deploy && npm run dev"
     volumes:
       - ./services/notifications-service:/app
+      - ./config/entrypoint-dev.sh:/app/entrypoint-dev.sh:ro
       - /app/node_modules
     networks:
       - app-network
