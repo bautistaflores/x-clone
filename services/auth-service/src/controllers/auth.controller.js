@@ -1,5 +1,7 @@
 import { AuthService } from '../services/auth.service.js';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Registra un nuevo usuario con perfil
 export const register = async (req, res) => {
     const { username, email, password} = req.body;
@@ -9,7 +11,9 @@ export const register = async (req, res) => {
     // Envia token al cliente
     res.cookie('token', token, {
         httpOnly: true,
-        sameSite: 'Lax',
+        sameSite: isProduction ? 'none' : 'lax',
+        secure: isProduction ? true : false,
+        path: '/',
         maxAge: 3600000
     })
 
@@ -34,7 +38,9 @@ export const login = async (req, res) => {
     // Envia token al cliente
     res.cookie('token', token, {
         httpOnly: true,
-        sameSite: 'Lax',
+        sameSite: isProduction ? 'none' : 'lax',
+        secure: isProduction ? true : false,
+        path: '/',
         maxAge: 3600000
     })
 
@@ -59,7 +65,9 @@ export const logout = async (req, res) => {
     // Elimina el token del navegador
     res.clearCookie('token', {
         httpOnly: true,
-        sameSite: 'Lax',
+        sameSite: isProduction ? 'none' : 'lax',
+        secure: isProduction ? true : false,
+        path: '/',
     });
 
     res.status(200).json({ success: true, message: 'Logged out' });
